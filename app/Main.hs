@@ -8,28 +8,29 @@ main :: IO ()
 main = do
     _ <- initGUI 
     window <- windowNew
-    windowSetDefaultSize window 600 600
+    windowMaximize window
 
-    window' <- vBoxNew False 0
+    window' <- vBoxNew False 5
     containerAdd window window'
 
     -- Opciones--------
 
-    opciones <- hBoxNew True 2
+    opciones <- hBoxNew True 3
+    boxPackStart window' opciones PackNatural 0
 
     file <- newMenuOption "Files" ["Cargar","Guardar","Nuevo"]
     opVista <- newMenuOption "Vista" ["Modo","Text","Full Screen"]
     opHelp <- newMenuOption "Help" ["Atajos","Licencia","Sobre"]
 
-    containerAdd opciones file
-    containerAdd opciones opVista
-    containerAdd opciones opHelp
+    boxPackStart opciones file PackGrow 0
+    boxPackStart opciones opVista PackGrow 0
+    boxPackStart opciones opHelp PackGrow 0
 
-    containerAdd window' opciones
 
     -- Campos--------
 
-    campos <- hBoxNew True 2
+    campos <- hBoxNew True 1
+    boxPackStart window' campos PackNatural 0
 
     fechaBut <- buttonNewWithLabel "Fecha"
     numBut <- buttonNewWithLabel "n°"
@@ -37,26 +38,44 @@ main = do
     montoBut <- buttonNewWithLabel "Monto"
     descriptionBut <- buttonNewWithLabel "Descripcion"
 
-    containerAdd campos fechaBut
-    containerAdd campos numBut
-    containerAdd campos tipoBut
-    containerAdd campos montoBut
-    containerAdd campos descriptionBut
+    boxPackStart campos fechaBut PackGrow 0
+    boxPackStart campos numBut PackGrow 0
+    boxPackStart campos tipoBut PackGrow 0
+    boxPackStart campos montoBut PackGrow 0
+    boxPackStart campos descriptionBut PackGrow 0
 
-    containerAdd window' campos
 
     -- Tabla --------
-
-    tabla <- tableNew 2 1 True
-
-    appendCell tabla 0
-    appendCell tabla 1
-
+    tabla <- newTable
     containerAdd window' tabla
+    
+    --tabla <- hBoxNew True 1
+    --boxPackStart window' tabla PackGrow 0
 
-    ----------------------
+    --tabla1 <- tableNew 2 1 True
+
+    --appendCell tabla1 0
+    --appendCell tabla1 1
+
+    --boxPackStart tabla tabla1 PackGrow 0
+
+    -- Coso de abajo---
+    pie <- hBoxNew False 0
+    boxPackEnd window' pie PackNatural 10
+
+    eti1 <- labelNewWithMnemonic "Hora"
+    eti2 <- labelNewWithMnemonic "nose"
+    eti3 <- labelNewWithMnemonic "algo"
+    eti4 <- labelNewWithMnemonic "Total"
+
+    boxPackStart pie eti1 PackGrow 0
+    boxPackStart pie eti2 PackGrow 0
+    boxPackStart pie eti3 PackGrow 0
+    boxPackStart pie eti4 PackGrow 0
+
+
     --_ <- shortCutsManage window fechaBut
-    _ <- shortCutsManage window tabla
+    _ <- shortCutsManage window
 
     widgetShowAll window
     _ <- on window objectDestroy mainQuit
