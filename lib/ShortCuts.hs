@@ -3,7 +3,6 @@ module  ShortCuts where
 import System.Glib
 import Control.Monad.IO.Class (liftIO)
 import Graphics.UI.Gtk
-import GtkExtension
 
 shortCutsManage :: WidgetClass object => object -> IO (ConnectId object)
 shortCutsManage window = 
@@ -11,7 +10,7 @@ shortCutsManage window =
             nose <- glibToString <$> eventKeyName
             case nose of
                 "n" -> do 
-                    --liftIO $ appendCell tabla 2
+                    --liftIO $ appendCell window
                     --liftIO $ buttonSetLabel tabla "Funciona??"
                     liftIO $ putStrLn nose
                     return False

@@ -37,7 +37,7 @@ newMenuOption s ops = do
 
 newCell :: IO HBox
 newCell = do
-    cell <- hBoxNew False 1
+    cell <- hBoxNew False 0
     entry0 <- entryNew
     entry1 <- entryNew
     entry2 <- entryNew
@@ -52,10 +52,15 @@ newCell = do
 
     return cell
 
-appendCell :: Table -> Int -> IO ()
-appendCell tabla y =
-    newCell >>= \c ->
-    tableAttach tabla c 0 1 y (y+1) [Expand] [Shrink] 0 0
+appendCell :: ScrolledWindow -> IO ()
+appendCell scroll = 
+    containerGetChildren scroll >>= 
+    (\(viewPort:_) -> viewportChilds viewPort) >>= 
+    (\(box:_) -> newCell >>= \c -> appendBox box c)
+
+    where
+      viewportChilds = containerGetChildren . castToContainer
+      appendBox box c = boxPackStart (castToBox box) c PackNatural 0
 
 newTable :: IO ScrolledWindow
 newTable = do
@@ -66,48 +71,8 @@ newTable = do
     containerAdd box' box
 
     cel1 <- newCell
-    cel2 <- newCell
-    cel3 <- newCell
-    cel4 <- newCell
-    cel5 <- newCell
-    cel6 <- newCell
-    cel7 <- newCell
-    cel8 <- newCell
-    cel9 <- newCell
-    cel10 <- newCell
-    cel11 <- newCell
-    cel12 <- newCell
-    cel13 <- newCell
-    cel14 <- newCell
-    cel15 <- newCell
-    cel16 <- newCell
-    cel17 <- newCell
-    cel18 <- newCell
-    cel19 <- newCell
-    cel20 <- newCell
-    cel21 <- newCell
 
     boxPackStart box cel1 PackNatural 0
-    boxPackStart box cel2 PackNatural 0
-    boxPackStart box cel3 PackNatural 0
-    boxPackStart box cel4 PackNatural 0
-    boxPackStart box cel5 PackNatural 0
-    boxPackStart box cel6 PackNatural 0
-    boxPackStart box cel7 PackNatural 0
-    boxPackStart box cel8 PackNatural 0
-    boxPackStart box cel9 PackNatural 0
-    boxPackStart box cel10 PackNatural 0
-    boxPackStart box cel11 PackNatural 0
-    boxPackStart box cel12 PackNatural 0
-    boxPackStart box cel13 PackNatural 0
-    boxPackStart box cel14 PackNatural 0
-    boxPackStart box cel15 PackNatural 0
-    boxPackStart box cel16 PackNatural 0
-    boxPackStart box cel17 PackNatural 0
-    boxPackStart box cel18 PackNatural 0
-    boxPackStart box cel19 PackNatural 0
-    boxPackStart box cel20 PackNatural 0
-    boxPackStart box cel21 PackNatural 0
 
     return scroll
 

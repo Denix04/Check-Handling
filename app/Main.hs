@@ -29,7 +29,7 @@ main = do
 
     -- Campos--------
 
-    campos <- hBoxNew True 1
+    campos <- hBoxNew True 0
     boxPackStart window' campos PackNatural 0
 
     fechaBut <- buttonNewWithLabel "Fecha"
@@ -47,7 +47,12 @@ main = do
 
     -- Tabla --------
     tabla <- newTable
-    containerAdd window' tabla
+    boxPackStart window' tabla PackGrow 0
+
+    appendCell tabla
+    appendCell tabla
+    appendCell tabla
+    appendCell tabla
     
     --tabla <- hBoxNew True 1
     --boxPackStart window' tabla PackGrow 0
