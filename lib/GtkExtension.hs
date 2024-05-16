@@ -8,8 +8,8 @@ typeWidget wid =
     widgetPath wid >>= (\path -> let (_,_,reversedPath) = path
     in return ((reverse . takeWhile (\x -> x /= '.')) reversedPath))
 
-obtenerDatos :: ContainerClass a => a -> IO [String]
-obtenerDatos con =
+getDataEntry :: ContainerClass a => a -> IO [String]
+getDataEntry con =
     containerGetChildren con >>=
     filterM (\wid -> (=="GtkEntry") <$> typeWidget wid) >>=
     (\x -> return $ mapText x) >>= 
@@ -17,6 +17,39 @@ obtenerDatos con =
 
     where 
         mapText = fmap (entryGetText . castToEntry)
+
+getEntriesTable :: ScrolledWindow -> IO [HBox]
+getEntriesTable scroll = 
+    containerGetChildren scroll >>= \viewPort ->
+    obtainChildOf viewPort >>= \vBoxes ->
+    obtainChildOf vBoxes >>= \hBoxes ->
+    return $ fmap castToHBox hBoxes
+
+    where 
+        obtainChildOf :: [Widget] -> IO [Widget]
+        obtainChildOf parent = 
+            fmap concat (sequence $ map (containerGetChildren . castToContainer) parent)
+
+getTextCell :: HBox -> IO [String]
+getTextCell b = 
+    containerGetChildren b >>= \entrie ->
+    sequence $ map (entryGetText . castToEntry) entrie >>= \texts ->
+    return texts
+
+
+getDataEntries :: [HBox] -> IO [[String]]
+getDataEntries boxes = aux (pure []) boxes
+    where
+        aux :: IO [[String]] -> [HBox] -> IO [[String]]
+        aux acc [] = acc
+        aux acc (b:bs) = aux (concatM (getTextCell b) acc) bs
+
+        concatM = liftM2 (:)
+
+getDataTable :: ScrolledWindow -> IO [[String]]
+getDataTable scroll =
+    getEntriesTable scroll >>=
+    getDataEntries
 
 newMenuOption :: String -> [String] -> IO Expander
 newMenuOption s ops = do
@@ -94,8 +127,8 @@ pedir s = do
 
     return box
 
-salir :: ContainerClass a => a -> IO ()
-salir con = do
-    datos <- obtenerDatos con
+salir :: ScrolledWindow -> IO ()
+salir tabla = do
+    datos <- getDataTable tabla
     putStrLn $ show datos
     mainQuit

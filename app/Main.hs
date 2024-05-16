@@ -51,8 +51,6 @@ main = do
 
     appendCell tabla
     appendCell tabla
-    appendCell tabla
-    appendCell tabla
     
     --tabla <- hBoxNew True 1
     --boxPackStart window' tabla PackGrow 0
@@ -80,9 +78,9 @@ main = do
 
 
     --_ <- shortCutsManage window fechaBut
-    _ <- shortCutsManage window
+    --_ <- shortCutsManage window
 
     widgetShowAll window
-    _ <- on window objectDestroy mainQuit
+    _ <- on window objectDestroy $ salir tabla
 
     mainGUI
