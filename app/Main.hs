@@ -46,23 +46,16 @@ main = do
 
 
     -- Tabla --------
+
     tabla <- newTable
     boxPackStart window' tabla PackGrow 0
 
     appendCell tabla
     appendCell tabla
-    
-    --tabla <- hBoxNew True 1
-    --boxPackStart window' tabla PackGrow 0
+   
 
-    --tabla1 <- tableNew 2 1 True
+    -- Pie de pagina ----
 
-    --appendCell tabla1 0
-    --appendCell tabla1 1
-
-    --boxPackStart tabla tabla1 PackGrow 0
-
-    -- Coso de abajo---
     pie <- hBoxNew False 0
     boxPackEnd window' pie PackNatural 10
 

@@ -1,4 +1,4 @@
-module  ShortCuts where
+module SignalHandlers where
 
 import System.Glib
 import Control.Monad.IO.Class (liftIO)
@@ -18,3 +18,30 @@ shortCutsManage window =
                     return True
                 _ -> liftIO $ putStrLn nose >>
                     return False
+
+
+entryCorr :: EventM EFocus Bool
+entryCorr = do
+    liftIO $ putStrLn "Chau Fecha"
+    return False
+
+checkIdCorr :: EventM EFocus Bool
+checkIdCorr = do
+    liftIO $ putStrLn "Chau n° cheque"
+    return False
+
+typeOpCorr :: EventM EFocus Bool
+typeOpCorr = do
+    liftIO $ putStrLn "Chau Type Operation"
+    return False
+
+
+amountCorr :: EventM EFocus Bool
+amountCorr = do
+    liftIO $ putStrLn "Chau Amount"
+    return False
+
+descCorr :: EventM EFocus Bool
+descCorr = do
+    liftIO $ putStrLn "Chau Description"
+    return False
