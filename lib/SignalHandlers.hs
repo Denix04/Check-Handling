@@ -30,9 +30,12 @@ dateCorroboration entry = liftIO $ do
         Just date -> entrySetText entry $ dateToStr date
     return False
 
-checkIdCorroboration :: EventM EFocus Bool
-checkIdCorroboration = do
-    liftIO $ putStrLn "Chau n° cheque"
+checkIdCorroboration :: Entry -> EventM EFocus Bool
+checkIdCorroboration entry = liftIO $ do
+    checkId <- strToNumber <$> entryGetText entry :: IO (Maybe Double)
+    case checkId of
+        Nothing -> widgetGrabFocus entry
+        Just num -> putStrLn $ show num
     return False
 
 typeOpCorroboration :: Entry -> EventM EFocus Bool
@@ -44,9 +47,12 @@ typeOpCorroboration entry = liftIO $ do
     return False
 
 
-amountCorroboration :: EventM EFocus Bool
-amountCorroboration = do
-    liftIO $ putStrLn "Chau Amount"
+amountCorroboration :: Entry -> EventM EFocus Bool
+amountCorroboration entry = liftIO $ do
+    amount <- strToNumber <$> entryGetText entry :: IO (Maybe Double)
+    case amount of
+        Nothing -> widgetGrabFocus entry
+        Just num -> putStrLn $ show num
     return False
 
 descCorroboration :: EventM EFocus Bool

@@ -8,21 +8,14 @@ import Data
 -----------------------------
 
 strToDate :: String -> Maybe Date
-strToDate s = do
-    case separateBy sep s of 
-        [day',month',year'] ->
-            let date = Date {day = read day', 
-                            month = read month', 
-                            year = read year'}
-            in 
-                if validDate date 
-                    then Just date 
-                    else Nothing
-
-        _ -> Nothing
+strToDate s = (sequence $ map strToNumber $ separateBy sep s) >>=
+    parseToDate
     
     where 
         sep = ['/',' ',',','.']
+        parseToDate [d,m,y] = let date = Date d m y in 
+            if validDate date then Just date else Nothing
+        parseToDate _ = Nothing
 
 dateToStr :: Date -> String
 dateToStr (Date d m y) = show d ++ "/" ++
@@ -69,6 +62,20 @@ guesTypeOp s = (mostSimilar . coincidences . toLowerCase) s
                 aux acc to ((t,c):xs)
                     | c > acc = aux c t xs
                     | otherwise = aux acc to xs
+
+-----------------------------
+-- Amount
+-----------------------------
+
+strToNumber ::Read a => String -> Maybe a
+strToNumber [] = Nothing
+strToNumber s = 
+    if validNumber s 
+        then Just $ read s 
+        else Nothing
+    where
+        validNumber [] = True
+        validNumber (x:xs) = isDigit x && validNumber xs
 
 -----------------------------
 -- Registers

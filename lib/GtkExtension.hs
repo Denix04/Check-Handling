@@ -51,11 +51,11 @@ newCell = do
 
     boxPackStartGrow cell [date,checkId,typeOp,amount,desc] 0
 
-    on date focusOutEvent $ dateCorroboration date
-    on checkId focusOutEvent checkIdCorroboration
-    on typeOp focusOutEvent $ typeOpCorroboration typeOp
-    on amount focusOutEvent amountCorroboration
-    on desc focusOutEvent descCorroboration
+    _ <- on date focusOutEvent $ dateCorroboration date
+    _ <- on checkId focusOutEvent $ checkIdCorroboration checkId
+    _ <- on typeOp focusOutEvent $ typeOpCorroboration typeOp
+    _ <- on amount focusOutEvent $ amountCorroboration amount
+    _ <- on desc focusOutEvent descCorroboration
 
     return cell
 
