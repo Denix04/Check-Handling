@@ -1,14 +1,14 @@
 module Main where
 
 import GtkExtension
-import ShortCuts
 import Graphics.UI.Gtk
     
 main :: IO ()
 main = do
     _ <- initGUI 
     window <- windowNew
-    windowMaximize window
+    windowSetDefaultSize window 600 600
+    --windowMaximize window
 
     window' <- vBoxNew False 5
     containerAdd window window'
@@ -22,9 +22,7 @@ main = do
     opVista <- newMenuOption "Vista" ["Modo","Text","Full Screen"]
     opHelp <- newMenuOption "Help" ["Atajos","Licencia","Sobre"]
 
-    boxPackStart opciones file PackGrow 0
-    boxPackStart opciones opVista PackGrow 0
-    boxPackStart opciones opHelp PackGrow 0
+    boxPackStartGrow opciones [file,opVista,opHelp] 0
 
 
     -- Campos--------
@@ -36,13 +34,10 @@ main = do
     numBut <- buttonNewWithLabel "n°"
     tipoBut <- buttonNewWithLabel "Tipo"
     montoBut <- buttonNewWithLabel "Monto"
-    descriptionBut <- buttonNewWithLabel "Descripcion"
+    descBut <- buttonNewWithLabel "Descripcion"
 
-    boxPackStart campos fechaBut PackGrow 0
-    boxPackStart campos numBut PackGrow 0
-    boxPackStart campos tipoBut PackGrow 0
-    boxPackStart campos montoBut PackGrow 0
-    boxPackStart campos descriptionBut PackGrow 0
+    let buttons = [fechaBut,numBut,tipoBut,montoBut,descBut]
+    boxPackStartGrow campos buttons 0
 
 
     -- Tabla --------
@@ -64,14 +59,8 @@ main = do
     eti3 <- labelNewWithMnemonic "algo"
     eti4 <- labelNewWithMnemonic "Total"
 
-    boxPackStart pie eti1 PackGrow 0
-    boxPackStart pie eti2 PackGrow 0
-    boxPackStart pie eti3 PackGrow 0
-    boxPackStart pie eti4 PackGrow 0
+    boxPackStartGrow pie [eti1,eti2,eti3,eti4] 0
 
-
-    --_ <- shortCutsManage window fechaBut
-    --_ <- shortCutsManage window
 
     widgetShowAll window
     _ <- on window objectDestroy $ salir tabla

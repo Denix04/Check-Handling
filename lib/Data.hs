@@ -5,7 +5,7 @@ data Date = Date {
     month :: Int,
     year :: Int }
 
-data TypeOperation = Income | Egress | ToEgress
+data TypeOperation = Income | Egress | ToEgress | None
 
 data Register = 
     Register {
@@ -30,6 +30,7 @@ validDate (Date d m y)
     | m `elem` [1,3,5,8,10,12] = valid31 d
     | m `elem` [4,6,7,9,11] = valid30 d
     | m `elem` [2] = validFeb y d
+    | otherwise = False
         where 
             valid31 d
                 | d < 1 || d > 31 = False

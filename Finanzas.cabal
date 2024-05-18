@@ -18,9 +18,9 @@ common warnings
 library
     import:           warnings
     exposed-modules:  GtkExtension
-                     ,ShortCuts
                      ,Data
                      ,DataManipulation
+                     ,SignalHandlers
     -- other-modules:
     -- other-extensions:
     build-depends:    base ^>=4.17.2.1

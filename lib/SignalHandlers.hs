@@ -3,6 +3,8 @@ module SignalHandlers where
 import System.Glib
 import Control.Monad.IO.Class (liftIO)
 import Graphics.UI.Gtk
+import Data
+import DataManipulation
 
 shortCutsManage :: WidgetClass object => object -> IO (ConnectId object)
 shortCutsManage window = 
@@ -20,28 +22,34 @@ shortCutsManage window =
                     return False
 
 
-entryCorr :: EventM EFocus Bool
-entryCorr = do
-    liftIO $ putStrLn "Chau Fecha"
+dateCorroboration :: Entry -> EventM EFocus Bool
+dateCorroboration entry = liftIO $ do
+    date <- (strToDate . glibToString) <$> entryGetText entry
+    case date of
+        Nothing -> widgetGrabFocus entry
+        Just date -> entrySetText entry $ dateToStr date
     return False
 
-checkIdCorr :: EventM EFocus Bool
-checkIdCorr = do
+checkIdCorroboration :: EventM EFocus Bool
+checkIdCorroboration = do
     liftIO $ putStrLn "Chau n° cheque"
     return False
 
-typeOpCorr :: EventM EFocus Bool
-typeOpCorr = do
-    liftIO $ putStrLn "Chau Type Operation"
+typeOpCorroboration :: Entry -> EventM EFocus Bool
+typeOpCorroboration entry = liftIO $ do
+    typeOp <- (guesTypeOp . glibToString) <$> entryGetText entry
+    case typeOp of
+        None -> widgetGrabFocus entry
+        _ -> entrySetText entry $ typeOpToStr typeOp
     return False
 
 
-amountCorr :: EventM EFocus Bool
-amountCorr = do
+amountCorroboration :: EventM EFocus Bool
+amountCorroboration = do
     liftIO $ putStrLn "Chau Amount"
     return False
 
-descCorr :: EventM EFocus Bool
-descCorr = do
+descCorroboration :: EventM EFocus Bool
+descCorroboration = do
     liftIO $ putStrLn "Chau Description"
     return False

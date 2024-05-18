@@ -2,11 +2,7 @@ module GtkExtension where
 
 import Control.Monad
 import Graphics.UI.Gtk
-
-typeWidget :: WidgetClass a => a -> IO String
-typeWidget wid =
-    widgetPath wid >>= (\path -> let (_,_,reversedPath) = path
-    in return ((reverse . takeWhile (\x -> x /= '.')) reversedPath))
+import SignalHandlers
 
 getDataEntry :: ContainerClass a => a -> IO [String]
 getDataEntry con =
@@ -18,38 +14,9 @@ getDataEntry con =
     where 
         mapText = fmap (entryGetText . castToEntry)
 
-getEntriesTable :: ScrolledWindow -> IO [HBox]
-getEntriesTable scroll = 
-    containerGetChildren scroll >>= \viewPort ->
-    obtainChildOf viewPort >>= \vBoxes ->
-    obtainChildOf vBoxes >>= \hBoxes ->
-    return $ fmap castToHBox hBoxes
-
-    where 
-        obtainChildOf :: [Widget] -> IO [Widget]
-        obtainChildOf parent = 
-            fmap concat (sequence $ map (containerGetChildren . castToContainer) parent)
-
-getTextCell :: HBox -> IO [String]
-getTextCell b = 
-    containerGetChildren b >>= \entrie ->
-    sequence $ map (entryGetText . castToEntry) entrie >>= \texts ->
-    return texts
-
-
-getDataEntries :: [HBox] -> IO [[String]]
-getDataEntries boxes = aux (pure []) boxes
-    where
-        aux :: IO [[String]] -> [HBox] -> IO [[String]]
-        aux acc [] = acc
-        aux acc (b:bs) = aux (concatM (getTextCell b) acc) bs
-
-        concatM = liftM2 (:)
-
-getDataTable :: ScrolledWindow -> IO [[String]]
-getDataTable scroll =
-    getEntriesTable scroll >>=
-    getDataEntries
+-----------------------------
+-- Menu
+-----------------------------
 
 newMenuOption :: String -> [String] -> IO Expander
 newMenuOption s ops = do
@@ -68,20 +35,27 @@ newMenuOption s ops = do
             menuShellAppend m item
             appendOptions xs m
 
+-----------------------------
+-- Cells
+-----------------------------
+
 newCell :: IO HBox
 newCell = do
     cell <- hBoxNew False 0
-    entry0 <- entryNew
-    entry1 <- entryNew
-    entry2 <- entryNew
-    entry3 <- entryNew
-    entry4 <- entryNew
 
-    boxPackStart cell entry0 PackGrow 0
-    boxPackStart cell entry1 PackGrow 0
-    boxPackStart cell entry2 PackGrow 0
-    boxPackStart cell entry3 PackGrow 0
-    boxPackStart cell entry4 PackGrow 0
+    date <- entryNew
+    checkId <- entryNew
+    typeOp <- entryNew
+    amount <- entryNew
+    desc <- entryNew
+
+    boxPackStartGrow cell [date,checkId,typeOp,amount,desc] 0
+
+    on date focusOutEvent $ dateCorroboration date
+    on checkId focusOutEvent checkIdCorroboration
+    on typeOp focusOutEvent $ typeOpCorroboration typeOp
+    on amount focusOutEvent amountCorroboration
+    on desc focusOutEvent descCorroboration
 
     return cell
 
@@ -94,6 +68,10 @@ appendCell scroll =
     where
       viewportChilds = containerGetChildren . castToContainer
       appendBox box c = boxPackStart (castToBox box) c PackNatural 0
+
+-----------------------------
+-- Table
+-----------------------------
 
 newTable :: IO ScrolledWindow
 newTable = do
@@ -108,6 +86,40 @@ newTable = do
     boxPackStart box cel1 PackNatural 0
 
     return scroll
+
+getDataTable :: ScrolledWindow -> IO [[String]]
+getDataTable scroll =
+    getEntriesTable scroll >>=
+    getDataEntries
+
+getEntriesTable :: ScrolledWindow -> IO [HBox]
+getEntriesTable scroll = 
+    containerGetChildren scroll >>= \viewPort ->
+    obtainChildOf viewPort >>= \vBoxes ->
+    obtainChildOf vBoxes >>= \hBoxes ->
+    return $ fmap castToHBox hBoxes
+
+    where 
+        obtainChildOf :: [Widget] -> IO [Widget]
+        obtainChildOf parent = 
+            fmap concat (sequence $ 
+                        map (containerGetChildren . castToContainer) parent)
+
+getDataEntries :: [HBox] -> IO [[String]]
+getDataEntries boxes = aux (pure []) boxes
+    where
+        aux :: IO [[String]] -> [HBox] -> IO [[String]]
+        aux acc [] = acc
+        aux acc (b:bs) = aux (concatM (getTextCell b) acc) bs
+
+        concatM = liftM2 (:)
+
+getTextCell :: HBox -> IO [String]
+getTextCell b = 
+    containerGetChildren b >>= \entrie ->
+    sequence $ map (entryGetText . castToEntry) entrie >>= \texts ->
+    return texts
+
 
 -------------------------------------------------------
 -- Cosas que hice para probar
@@ -132,3 +144,21 @@ salir tabla = do
     datos <- getDataTable tabla
     putStrLn $ show datos
     mainQuit
+
+-----------------------------
+-- Utilities
+-----------------------------
+
+typeWidget :: WidgetClass a => a -> IO String
+typeWidget wid =
+    widgetPath wid >>= (\path -> let (_,_,reversedPath) = path
+    in return ((reverse . takeWhile (\x -> x /= '.')) reversedPath))
+
+boxPackStartGrow :: (BoxClass self, WidgetClass child) => 
+                    self -> [child] -> Int -> IO ()
+boxPackStartGrow _ [] _ = return ()
+boxPackStartGrow box (c:cs) pad = 
+    boxPackStart box c PackGrow pad >>
+    boxPackStartGrow box cs pad
+
+
