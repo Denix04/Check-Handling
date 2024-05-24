@@ -3,8 +3,10 @@ module SignalHandlers where
 import System.Glib
 import Control.Monad.IO.Class (liftIO)
 import Graphics.UI.Gtk
+
 import Data
 import DataManipulation
+import DataRetrieve
 
 shortCutsManage :: WidgetClass object => object -> IO (ConnectId object)
 shortCutsManage window = 
@@ -27,12 +29,12 @@ dateCorroboration entry = liftIO $ do
     date <- (strToDate . glibToString) <$> entryGetText entry
     case date of
         Nothing -> widgetGrabFocus entry
-        Just date -> entrySetText entry $ dateToStr date
+        Just date -> entrySetText entry $ show date
     return False
 
 checkIdCorroboration :: Entry -> EventM EFocus Bool
 checkIdCorroboration entry = liftIO $ do
-    checkId <- strToNumber <$> entryGetText entry :: IO (Maybe Double)
+    checkId <- strToNumber <$> entryGetText entry :: IO (Maybe Int)
     case checkId of
         Nothing -> widgetGrabFocus entry
         Just num -> putStrLn $ show num
@@ -42,8 +44,8 @@ typeOpCorroboration :: Entry -> EventM EFocus Bool
 typeOpCorroboration entry = liftIO $ do
     typeOp <- (guesTypeOp . glibToString) <$> entryGetText entry
     case typeOp of
-        None -> widgetGrabFocus entry
-        _ -> entrySetText entry $ typeOpToStr typeOp
+        Nothing -> widgetGrabFocus entry
+        Just tOp -> entrySetText entry $ typeOpToStr tOp
     return False
 
 
@@ -59,3 +61,18 @@ descCorroboration :: EventM EFocus Bool
 descCorroboration = do
     liftIO $ putStrLn "Chau Description"
     return False
+
+cellManipulation :: HBox -> EventM EFocus Bool
+cellManipulation box = liftIO $ do
+    mayInfo <- listToRegister <$> getTextCell box
+    case mayInfo of
+        Just info -> putStrLn $ show info
+        Nothing -> putStrLn "No esta completa la casilla"
+    return False
+
+quitProgram :: ScrolledWindow -> IO ()
+quitProgram tabla = do
+    datos <- strToRegisters <$> getDataTable tabla
+    putStrLn $ show datos
+    mainQuit
+

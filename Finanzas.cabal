@@ -17,9 +17,11 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  GtkExtension
+    exposed-modules:  UI
+                     ,GtkExtension
                      ,Data
                      ,DataManipulation
+                     ,DataRetrieve
                      ,SignalHandlers
     -- other-modules:
     -- other-extensions:

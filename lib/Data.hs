@@ -11,9 +11,17 @@ data Register =
     Register {
         date :: Date,
         state :: TypeOperation,
-        checkId :: Double,
+        checkId :: Int,
         amount :: Double,
         description :: String }
+
+instance Show Register where
+    show (Register d s c a des) = 
+        show d ++ "\n" ++
+        show s ++ "\n" ++
+        show c ++ "\n" ++
+        show a ++ "\n" ++
+        show des ++ "\n"
 
 instance Show Date where
     show d = (show $ day d) ++ "/" ++ 
@@ -24,6 +32,7 @@ instance Show TypeOperation where
     show Income = "Ingreso"
     show Egress = "Egreso"
     show ToEgress = "A Egresar"
+    show None = ""
 
 validDate :: Date -> Bool
 validDate (Date d m y)

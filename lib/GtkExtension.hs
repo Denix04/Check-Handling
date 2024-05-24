@@ -3,6 +3,7 @@ module GtkExtension where
 import Control.Monad
 import Graphics.UI.Gtk
 import SignalHandlers
+import Data
 
 getDataEntry :: ContainerClass a => a -> IO [String]
 getDataEntry con =
@@ -57,6 +58,8 @@ newCell = do
     _ <- on amount focusOutEvent $ amountCorroboration amount
     _ <- on desc focusOutEvent descCorroboration
 
+    _ <- on cell focusOutEvent $ cellManipulation cell
+
     return cell
 
 appendCell :: ScrolledWindow -> IO ()
@@ -87,64 +90,6 @@ newTable = do
 
     return scroll
 
-getDataTable :: ScrolledWindow -> IO [[String]]
-getDataTable scroll =
-    getEntriesTable scroll >>=
-    getDataEntries
-
-getEntriesTable :: ScrolledWindow -> IO [HBox]
-getEntriesTable scroll = 
-    containerGetChildren scroll >>= \viewPort ->
-    obtainChildOf viewPort >>= \vBoxes ->
-    obtainChildOf vBoxes >>= \hBoxes ->
-    return $ fmap castToHBox hBoxes
-
-    where 
-        obtainChildOf :: [Widget] -> IO [Widget]
-        obtainChildOf parent = 
-            fmap concat (sequence $ 
-                        map (containerGetChildren . castToContainer) parent)
-
-getDataEntries :: [HBox] -> IO [[String]]
-getDataEntries boxes = aux (pure []) boxes
-    where
-        aux :: IO [[String]] -> [HBox] -> IO [[String]]
-        aux acc [] = acc
-        aux acc (b:bs) = aux (concatM (getTextCell b) acc) bs
-
-        concatM = liftM2 (:)
-
-getTextCell :: HBox -> IO [String]
-getTextCell b = 
-    containerGetChildren b >>= \entrie ->
-    sequence $ map (entryGetText . castToEntry) entrie >>= \texts ->
-    return texts
-
-
--------------------------------------------------------
--- Cosas que hice para probar
--------------------------------------------------------
-
-pedir :: Maybe String -> IO HBox
-pedir s = do
-    etiqueta <- labelNew s
-    entrada <- entryNew
-    boton <- buttonNewWithLabel "Enviar"
-    _ <- on boton buttonActivated (buttonSetLabel boton "Enviado")
-
-    box <- hBoxNew True 2
-    boxPackStartDefaults box etiqueta
-    boxPackStartDefaults box entrada
-    boxPackStartDefaults box boton
-
-    return box
-
-salir :: ScrolledWindow -> IO ()
-salir tabla = do
-    datos <- getDataTable tabla
-    putStrLn $ show datos
-    mainQuit
-
 -----------------------------
 -- Utilities
 -----------------------------
@@ -160,5 +105,3 @@ boxPackStartGrow _ [] _ = return ()
 boxPackStartGrow box (c:cs) pad = 
     boxPackStart box c PackGrow pad >>
     boxPackStartGrow box cs pad
-
-

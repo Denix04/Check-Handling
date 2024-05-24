@@ -1,6 +1,7 @@
 module DataManipulation where
 
 import Data.Char
+import Data.Maybe
 import Data
 
 -----------------------------
@@ -17,11 +18,6 @@ strToDate s = (sequence $ map strToNumber $ separateBy sep s) >>=
             if validDate date then Just date else Nothing
         parseToDate _ = Nothing
 
-dateToStr :: Date -> String
-dateToStr (Date d m y) = show d ++ "/" ++
-                         show m ++ "/" ++
-                         show y
-
 -----------------------------
 -- Type Operation
 -----------------------------
@@ -31,13 +27,8 @@ typeOpToStr Income = "Ingreso"
 typeOpToStr Egress = "Egreso"
 typeOpToStr ToEgress = "A Egresar"
 
-strToTypeOp :: String -> TypeOperation
-strToTypeOp "Ingreso" = Income
-strToTypeOp "Egreso" = Egress
-strToTypeOp "A Egresar" = ToEgress
-
-
-guesTypeOp :: String -> TypeOperation
+guesTypeOp :: String -> Maybe TypeOperation
+guesTypeOp [] = Nothing
 guesTypeOp s = (mostSimilar . coincidences . toLowerCase) s
     where
         toLowerCase = map toLower
@@ -55,13 +46,13 @@ guesTypeOp s = (mostSimilar . coincidences . toLowerCase) s
                 typeOpStr = ["ingreso","egreso","a egresar"]
 
 
-        mostSimilar :: [(TypeOperation, Int)] -> TypeOperation
-        mostSimilar xs = aux 0 None xs
+        mostSimilar :: [(TypeOperation, Int)] -> Maybe TypeOperation
+        mostSimilar xs = aux 0 Nothing xs
             where 
-                aux _ to [] = to
-                aux acc to ((t,c):xs)
-                    | c > acc = aux c t xs
-                    | otherwise = aux acc to xs
+                aux _ ret [] = ret
+                aux acc ret ((typ,cont):rest)
+                    | cont > acc = aux cont (Just typ) rest
+                    | otherwise = aux acc ret rest
 
 -----------------------------
 -- Amount
@@ -75,24 +66,34 @@ strToNumber s =
         else Nothing
     where
         validNumber [] = True
-        validNumber (x:xs) = isDigit x && validNumber xs
+        validNumber (x:xs) = validChar x && validNumber xs
+
+        validChar c = isDigit c || c == '.'
 
 -----------------------------
 -- Registers
 -----------------------------
 
 listToRegister :: [String] -> Maybe Register
-listToRegister [date',state',checkId',amount',desc] =
-    Just Register { 
-        --date = (strToDate date'),
-        state = (strToTypeOp state'),
-        checkId = (read checkId'),
-        amount = (read amount'),
+listToRegister [date',checkId',state',amount',desc] =
+    strToDate date' >>= \d ->
+    strToNumber checkId' >>= \c ->
+    strToNumber amount' >>= \a ->
+    guesTypeOp state' >>= \s ->
+    Just $ Register { 
+        date = (d),
+        state = (s),
+        checkId = (c),
+        amount = (a),
         description = desc }
+listToRegister _ = Nothing
 
-getRegisters :: IO [Register]
-getRegisters = undefined
-    --getDataTable >>= 
+strToRegisters :: [[String]] -> [Register]
+strToRegisters table = catMaybes $ map listToRegister table
+
+-----------------------------
+-- Utilities
+-----------------------------
     
 separateBy :: String -> [Char] -> [String]
 separateBy s sep = aux s sep [] []
@@ -100,6 +101,6 @@ separateBy s sep = aux s sep [] []
         aux :: [Char] -> String -> String -> [String] -> [String]
         aux sep [] acc ss = ss ++ [acc]
         aux sep (x:xs) acc ss
-            | x `elem` sep && acc == [] = aux sep xs [] ss
+            | x `elem` sep &&  acc == [] = aux sep xs [] ss
             | x `elem` sep = aux sep xs [] (ss ++ [acc])
             | otherwise  = aux sep xs (acc ++ [x]) ss
