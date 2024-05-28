@@ -6,6 +6,14 @@ import Graphics.UI.Gtk
 import SignalHandlers
 import Data
 
+data Cell = Cell {
+    cell :: HBox,
+    dateEntry :: Entry,
+    checkIdEntry :: Entry,
+    typeOpEntry :: Entry,
+    amountEntry :: Entry,
+    descEntry :: Entry }
+    
 getDataEntry :: ContainerClass a => a -> IO [String]
 getDataEntry con =
     containerGetChildren con >>=
@@ -41,8 +49,8 @@ newMenuOption s ops = do
 -- Cells
 -----------------------------
 
-newCell :: IORef Registers -> IO HBox
-newCell registers = do
+newCell :: IO Cell
+newCell = do
     cell <- hBoxNew False 0
 
     date <- entryNew
@@ -54,41 +62,39 @@ newCell registers = do
 
     boxPackStartGrow cell [date,checkId,typeOp,amount,desc] 0
 
-    _ <- on date focusOutEvent $ dateCorroboration date
-    _ <- on checkId focusOutEvent $ checkIdCorroboration checkId
-    _ <- on typeOp focusOutEvent $ typeOpCorroboration typeOp
-    _ <- on amount focusOutEvent $ amountCorroboration amount
-    _ <- on desc focusOutEvent descCorroboration
-
-    _ <- on cell setFocusChild $ cellManipulation cell registers
-
-    return cell
+    return Cell {
+        cellBox = cell,
+        dateEntry = date,
+        chechIdEntry = checkId,
+        typeOpEntry = typeOp,
+        amountEntry = amount,
+        descEntry = desc }
 
 appendCell :: ScrolledWindow -> IORef Registers -> IO ()
 appendCell scroll registers = 
     containerGetChildren scroll >>= 
     (\(viewPort:_) -> viewportChilds viewPort) >>= 
-    (\(box:_) -> newCell registers >>= \c -> appendBox box c)
+    (\(box:_) -> newCell >>= \c -> appendBox box c >> linkSignals c registers)
 
     where
       viewportChilds = containerGetChildren . castToContainer
-      appendBox box c = boxPackStart (castToBox box) c PackNatural 0
+      appendBox box c = boxPackStart (castToBox $ box) (cellBox c) PackNatural 0
 
 -----------------------------
 -- Table
 -----------------------------
 
-newTable :: IORef Registers -> IO ScrolledWindow
-newTable registers = do
+newTable :: IO ScrolledWindow
+newTable = do
     scroll <- scrolledWindowNew Nothing Nothing
     box' <- viewportNew Nothing Nothing
     box <- vBoxNew True 0
     containerAdd scroll box'
     containerAdd box' box
 
-    cel1 <- newCell registers
+    cell <- newCell
 
-    boxPackStart box cel1 PackNatural 0
+    boxPackStart box (cellBox cell) PackNatural 0
 
     return scroll
 
@@ -107,3 +113,14 @@ boxPackStartGrow _ [] _ = return ()
 boxPackStartGrow box (c:cs) pad = 
     boxPackStart box c PackGrow pad >>
     boxPackStartGrow box cs pad
+
+linkSignals :: Cell -> IORef Registers -> IO ()
+linkSignals cell registers = do
+
+    _ <- on (date (cell)) focusOutEvent $ dateCorroboration date (cell)
+    _ <- on (checkId (cell)) focusOutEvent $ checkIdCorroboration checkId (cell)
+    _ <- on (typeOp (cell)) focusOutEvent $ typeOpCorroboration typeOp (cell)
+    _ <- on (amount (cell)) focusOutEvent $ amountCorroboration amount (cell)
+    _ <- on (desc (cell)) focusOutEvent descCorroboration
+    _ <- on (cellBox (cell)) setFocusChild $ 
+        cellManipulation (cellBox (cell)) registers
