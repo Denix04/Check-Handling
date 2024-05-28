@@ -15,6 +15,8 @@ data Register =
         amount :: Double,
         description :: String }
 
+type Data = [Register]
+
 instance Show Register where
     show (Register d s c a des) = 
         show d ++ "\n" ++

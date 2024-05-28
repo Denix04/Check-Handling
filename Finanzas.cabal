@@ -23,6 +23,7 @@ library
                      ,DataManipulation
                      ,DataRetrieve
                      ,SignalHandlers
+                     ,Functionalities
     -- other-modules:
     -- other-extensions:
     build-depends:    base ^>=4.17.2.1
