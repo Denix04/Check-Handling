@@ -64,9 +64,9 @@ foot mainCont = do
     boxPackEnd mainCont foot PackNatural 10
 
     eti1 <- labelNewWithMnemonic "Hora"
-    eti2 <- labelNewWithMnemonic "nose"
-    eti3 <- labelNewWithMnemonic "algo"
+    eti2 <- labelNewWithMnemonic "fecha"
+    eti3 <- labelNewWithMnemonic "a cubrir"
     eti4 <- labelNewWithMnemonic "Total"
 
-    boxPackStartGrow foot [eti1,eti2,eti3,eti4] 0
+    boxPackStartGrow foot [eti1,eti3,eti2,eti4] 0
 
