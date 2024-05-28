@@ -88,7 +88,7 @@ listToRegister [date',checkId',state',amount',desc] =
         description = desc }
 listToRegister _ = Nothing
 
-strToRegisters :: [[String]] -> [Register]
+strToRegisters :: [[String]] -> Registers
 strToRegisters table = catMaybes $ map listToRegister table
 
 -----------------------------

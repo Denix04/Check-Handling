@@ -15,15 +15,16 @@ data Register =
         amount :: Double,
         description :: String }
 
-type Data = [Register]
+type Registers = [Register]
 
 instance Show Register where
     show (Register d s c a des) = 
-        show d ++ "\n" ++
-        show s ++ "\n" ++
-        show c ++ "\n" ++
-        show a ++ "\n" ++
-        show des ++ "\n"
+        "Registro\n" ++
+        "\t" ++ show d ++ "\n" ++
+        "\t" ++ show s ++ "\n" ++
+        "\t" ++ show c ++ "\n" ++
+        "\t" ++ show a ++ "\n" ++
+        "\t" ++ show des ++ "\n"
 
 instance Show Date where
     show d = (show $ day d) ++ "/" ++ 

@@ -1,5 +1,6 @@
 module GtkExtension where
 
+import Data.IORef
 import Control.Monad
 import Graphics.UI.Gtk
 import SignalHandlers
@@ -40,8 +41,8 @@ newMenuOption s ops = do
 -- Cells
 -----------------------------
 
-newCell :: IO HBox
-newCell = do
+newCell :: IORef Registers -> IO HBox
+newCell registers = do
     cell <- hBoxNew False 0
 
     date <- entryNew
@@ -49,6 +50,7 @@ newCell = do
     typeOp <- entryNew
     amount <- entryNew
     desc <- entryNew
+    widgetSetName desc "description"
 
     boxPackStartGrow cell [date,checkId,typeOp,amount,desc] 0
 
@@ -58,15 +60,15 @@ newCell = do
     _ <- on amount focusOutEvent $ amountCorroboration amount
     _ <- on desc focusOutEvent descCorroboration
 
-    _ <- on cell focusOutEvent $ cellManipulation cell
+    _ <- on cell setFocusChild $ cellManipulation cell registers
 
     return cell
 
-appendCell :: ScrolledWindow -> IO ()
-appendCell scroll = 
+appendCell :: ScrolledWindow -> IORef Registers -> IO ()
+appendCell scroll registers = 
     containerGetChildren scroll >>= 
     (\(viewPort:_) -> viewportChilds viewPort) >>= 
-    (\(box:_) -> newCell >>= \c -> appendBox box c)
+    (\(box:_) -> newCell registers >>= \c -> appendBox box c)
 
     where
       viewportChilds = containerGetChildren . castToContainer
@@ -76,15 +78,15 @@ appendCell scroll =
 -- Table
 -----------------------------
 
-newTable :: IO ScrolledWindow
-newTable = do
+newTable :: IORef Registers -> IO ScrolledWindow
+newTable registers = do
     scroll <- scrolledWindowNew Nothing Nothing
     box' <- viewportNew Nothing Nothing
     box <- vBoxNew True 0
     containerAdd scroll box'
     containerAdd box' box
 
-    cel1 <- newCell
+    cel1 <- newCell registers
 
     boxPackStart box cel1 PackNatural 0
 

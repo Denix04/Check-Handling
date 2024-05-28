@@ -3,6 +3,7 @@ module SignalHandlers where
 import System.Glib
 import Control.Monad.IO.Class (liftIO)
 import Graphics.UI.Gtk
+import Data.IORef
 
 import Data
 import DataManipulation
@@ -62,17 +63,20 @@ descCorroboration = do
     liftIO $ putStrLn "Chau Description"
     return False
 
-cellManipulation :: HBox -> EventM EFocus Bool
-cellManipulation box = liftIO $ do
+cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
+cellManipulation box registers wid = liftIO $ do
     mayInfo <- listToRegister <$> getTextCell box
     case mayInfo of
         Just info -> putStrLn $ show info
         Nothing -> putStrLn "No esta completa la casilla"
-    return False
 
-quitProgram :: ScrolledWindow -> IO ()
-quitProgram tabla = do
+quitProgram :: ScrolledWindow -> IORef Registers -> IO ()
+quitProgram tabla reg = do
     datos <- strToRegisters <$> getDataTable tabla
-    putStrLn $ show datos
+
+    writeIORef reg datos 
+    registros <- readIORef reg
+    putStrLn $ show registros
+
     mainQuit
 

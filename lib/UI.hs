@@ -1,8 +1,10 @@
 module UI where
 
 import Graphics.UI.Gtk
+import Data.IORef
 import GtkExtension
 import SignalHandlers
+import Data
 
 mainWindow :: IO Window
 mainWindow = do
@@ -47,13 +49,13 @@ headerRow mainCont = do
     boxPackStartGrow header buttons 0
 
 
-mainTable :: VBox -> IO ScrolledWindow
-mainTable mainCont = do
-    table <- newTable
+mainTable :: VBox -> IORef Registers -> IO ScrolledWindow
+mainTable mainCont registers = do
+    table <- newTable registers
     boxPackStart mainCont table PackGrow 0
 
-    appendCell table
-    appendCell table
+    appendCell table registers
+    appendCell table registers
 
     return table
    

@@ -1,6 +1,10 @@
 module Main where
 
+import Data.IORef
 import Graphics.UI.Gtk
+import Data
+import DataRetrieve
+import DataManipulation
 import SignalHandlers
 import UI
     
@@ -10,13 +14,14 @@ main = do
     window <- mainWindow
     mainCont <- mainContainer window
 
+    registers <- newIORef [] :: IO (IORef Registers)
+
     menuBar mainCont
     headerRow mainCont
-    tabla <- mainTable mainCont
+    tabla <- mainTable mainCont registers
     foot mainCont
 
     widgetShowAll window
-    _ <- on window objectDestroy $ quitProgram tabla
+    _ <- on window objectDestroy $ quitProgram tabla registers
 
     mainGUI
-    
