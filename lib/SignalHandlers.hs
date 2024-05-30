@@ -64,11 +64,50 @@ descCorroboration = do
     return False
 
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
-cellManipulation box registers wid = liftIO $ do
+cellManipulation box registers wid = do
     mayInfo <- listToRegister <$> getTextCell box
     case mayInfo of
         Just info -> putStrLn $ show info
         Nothing -> putStrLn "No esta completa la casilla"
+
+cellManipulation' :: HBox -> IORef Registers -> Maybe Widget -> IO ()
+cellManipulation' box registers wid = do
+    case wid of
+        Just widget -> do
+            isDesc <- isDescription widget
+            case isDesc of
+                True ->
+                    listToRegister <$> getTextCell box >>=
+                    maybe (putStrLn "No esta completa la casilla")
+                          (putStrLn . show)
+                _ -> putStrLn "No es una descripcion"
+        _ -> putStrLn "No se recivio un widget"
+
+    where
+        isDescription wid =
+            widgetGetName wid >>=  
+            return . ("description" ==)
+    
+cellManipulation'' :: HBox -> IORef Registers -> EventM EFocus Bool
+cellManipulation'' box registers = liftIO $ do
+    reg <- listToRegister <$> getTextCell box
+    maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
+    return False
+
+focusInManagent :: HBox -> EventM EFocus Bool
+focusInManagent box = do
+    widgets <- liftIO $ containerGetChildren box
+    tryEvent $ giveFocusChildren widgets
+    return False
+
+    where 
+
+        giveFocusChildren :: [Widget] -> EventM any ()
+        giveFocusChildren [] = stopEvent 
+        giveFocusChildren (x:xs) =
+            (liftIO $ widgetGrabFocus x) >>
+            giveFocusChildren xs
+
 
 quitProgram :: ScrolledWindow -> IORef Registers -> IO ()
 quitProgram tabla reg = do

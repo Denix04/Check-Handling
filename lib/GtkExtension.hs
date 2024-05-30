@@ -44,6 +44,7 @@ newMenuOption s ops = do
 newCell :: IORef Registers -> IO HBox
 newCell registers = do
     cell <- hBoxNew False 0
+    widgetSetCanFocus cell True
 
     date <- entryNew
     checkId <- entryNew
@@ -60,7 +61,9 @@ newCell registers = do
     _ <- on amount focusOutEvent $ amountCorroboration amount
     _ <- on desc focusOutEvent descCorroboration
 
-    _ <- on cell setFocusChild $ cellManipulation cell registers
+    --_ <- on cell setFocusChild $ cellManipulation' cell registers
+    _ <- on cell focusInEvent $ focusInManagent cell
+    _ <- on cell focusOutEvent $ cellManipulation'' cell registers
 
     return cell
 
@@ -107,3 +110,4 @@ boxPackStartGrow _ [] _ = return ()
 boxPackStartGrow box (c:cs) pad = 
     boxPackStart box c PackGrow pad >>
     boxPackStartGrow box cs pad
+
