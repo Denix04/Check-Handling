@@ -54,8 +54,8 @@ mainTable mainCont registers = do
     table <- newTable registers
     boxPackStart mainCont table PackGrow 0
 
-    appendCell' table registers
-    appendCell' table registers
+    appendCell table registers
+    appendCell table registers
 
     return table
    

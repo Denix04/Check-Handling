@@ -46,7 +46,6 @@ newMenuOption s ops = do
 newCell :: IORef Registers -> IO Cell
 newCell registers = do
     cell <- hBoxNew False 0
-    widgetSetCanFocus cell True
 
     date <- entryNew
     checkId <- entryNew
@@ -61,65 +60,26 @@ newCell registers = do
     _ <- on checkId focusOutEvent $ checkIdCorroboration checkId
     _ <- on typeOp focusOutEvent $ typeOpCorroboration typeOp
     _ <- on amount focusOutEvent $ amountCorroboration amount
-    _ <- on desc focusOutEvent descCorroboration
-
-    _ <- on cell focusInEvent $ focusInManagent cell
-    _ <- on cell focusOutEvent $ cellManipulation cell registers
-
-    return cell
-
-newCell' :: HBox -> IORef Registers -> IO Cell
-newCell' prevBox registers = do
-    cell <- hBoxNew False 0
-    widgetSetCanFocus cell True
-
-    date <- entryNew
-    checkId <- entryNew
-    typeOp <- entryNew
-    amount <- entryNew
-    desc <- entryNew
-    widgetSetName desc "description"
-
-    boxPackStartGrow cell [date,checkId,typeOp,amount,desc] 0
-
-    _ <- on date focusOutEvent $ dateCorroboration date
-    _ <- on checkId focusOutEvent $ checkIdCorroboration checkId
-    _ <- on typeOp focusOutEvent $ typeOpCorroboration typeOp
-    _ <- on amount focusOutEvent $ amountCorroboration amount
-    _ <- on desc focusOutEvent descCorroboration
-
-    _ <- on cell focusInEvent $ focusInManagent' cell prevBox
-    _ <- on cell focusOutEvent $ cellManipulation cell registers
+    _ <- on desc focusOutEvent $ descCorroboration cell registers
 
     return cell
 
 appendCell :: ScrolledWindow -> IORef Registers -> IO ()
 appendCell scroll registers = 
-    containerGetChildren scroll >>= 
-    (\(viewPort:_) -> viewportChilds viewPort) >>= 
-    (\(box:_) -> newCell registers >>= \c -> appendBox box c)
-
-    where
-      viewportChilds = containerGetChildren . castToContainer
-      appendBox box c = boxPackStart (castToBox box) c PackNatural 0
-
-appendCell' :: ScrolledWindow -> IORef Registers -> IO ()
-appendCell' scroll registers = 
     containerGetChildren scroll >>= \vp ->
     viewportGetChilds vp >>= 
-    boxesManagent >>= \(prevCell,vbox) ->
-    newCell' prevCell registers >>= \c -> appendBox vbox c
+    viewportBoxesManagent >>= \vbox ->
+    newCell registers >>= \c -> appendBox vbox c
 
     where
       viewportGetChilds vp = 
           concat <$> (mapM (containerGetChildren . castToContainer) vp)
 
-      boxesManagent :: [Widget] -> IO (Cell,VBox)
-      boxesManagent (x:_) =
-          (containerGetChildren . castToContainer) x >>= \cells -> 
-          return ( castToHBox $ last cells,castToVBox x)
+      viewportBoxesManagent [] = 
+          error "Main table not have been generated correctly"
+      viewportBoxesManagent (x:_) = return $ castToVBox x
 
-      appendBox box c = boxPackStart (castToBox box) c PackNatural 0
+      appendBox box c = boxPackStart box c PackNatural 0
 
 -----------------------------
 -- Table

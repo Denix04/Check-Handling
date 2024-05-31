@@ -24,7 +24,6 @@ shortCutsManage window =
                 _ -> liftIO $ putStrLn nose >>
                     return False
 
-
 dateCorroboration :: Entry -> EventM EFocus Bool
 dateCorroboration entry = liftIO $ do
     date <- (strToDate . glibToString) <$> entryGetText entry
@@ -58,43 +57,16 @@ amountCorroboration entry = liftIO $ do
         Just num -> putStrLn $ show num
     return False
 
-descCorroboration :: EventM EFocus Bool
-descCorroboration = do
-    liftIO $ putStrLn "Chau Description"
-    return False
-
-cellManipulation :: HBox -> IORef Registers -> EventM EFocus Bool
-cellManipulation box registers = liftIO $ do
+descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
+descCorroboration box reg = liftIO $ do
     reg <- listToRegister <$> getTextCell box
     maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
     return False
 
-focusInManagent :: HBox -> EventM EFocus Bool
-focusInManagent box = do
-    widgets <- liftIO $ containerGetChildren box
-    tryEvent $ giveFocusChildren widgets
-    return False
-
-    where 
-
-        giveFocusChildren :: [Widget] -> EventM any ()
-        giveFocusChildren [] = stopEvent 
-        giveFocusChildren (x:xs) =
-            (liftIO $ widgetGrabFocus x) >>
-            giveFocusChildren xs
-
-
-focusInManagent' :: HBox -> HBox -> EventM EFocus Bool
-focusInManagent' box prevBox = liftIO $ do
-    widgets <- containerGetChildren box
-    giveFocusChildren widgets prevBox
-    return False
-
-    where 
-        giveFocusChildren :: [Widget] -> HBox -> IO ()
-        giveFocusChildren [] prevBox = widgetGrabFocus prevBox
-        giveFocusChildren (x:xs) prevBox = 
-            widgetGrabFocus x >> giveFocusChildren xs prevBox
+cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
+cellManipulation box registers _ = do
+    reg <- listToRegister <$> getTextCell box
+    maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
 quitProgram :: ScrolledWindow -> IORef Registers -> IO ()
 quitProgram tabla reg = do
