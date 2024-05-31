@@ -63,33 +63,8 @@ descCorroboration = do
     liftIO $ putStrLn "Chau Description"
     return False
 
-cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
-cellManipulation box registers wid = do
-    mayInfo <- listToRegister <$> getTextCell box
-    case mayInfo of
-        Just info -> putStrLn $ show info
-        Nothing -> putStrLn "No esta completa la casilla"
-
-cellManipulation' :: HBox -> IORef Registers -> Maybe Widget -> IO ()
-cellManipulation' box registers wid = do
-    case wid of
-        Just widget -> do
-            isDesc <- isDescription widget
-            case isDesc of
-                True ->
-                    listToRegister <$> getTextCell box >>=
-                    maybe (putStrLn "No esta completa la casilla")
-                          (putStrLn . show)
-                _ -> putStrLn "No es una descripcion"
-        _ -> putStrLn "No se recivio un widget"
-
-    where
-        isDescription wid =
-            widgetGetName wid >>=  
-            return . ("description" ==)
-    
-cellManipulation'' :: HBox -> IORef Registers -> EventM EFocus Bool
-cellManipulation'' box registers = liftIO $ do
+cellManipulation :: HBox -> IORef Registers -> EventM EFocus Bool
+cellManipulation box registers = liftIO $ do
     reg <- listToRegister <$> getTextCell box
     maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
     return False
@@ -108,6 +83,18 @@ focusInManagent box = do
             (liftIO $ widgetGrabFocus x) >>
             giveFocusChildren xs
 
+
+focusInManagent' :: HBox -> HBox -> EventM EFocus Bool
+focusInManagent' box prevBox = liftIO $ do
+    widgets <- containerGetChildren box
+    giveFocusChildren widgets prevBox
+    return False
+
+    where 
+        giveFocusChildren :: [Widget] -> HBox -> IO ()
+        giveFocusChildren [] prevBox = widgetGrabFocus prevBox
+        giveFocusChildren (x:xs) prevBox = 
+            widgetGrabFocus x >> giveFocusChildren xs prevBox
 
 quitProgram :: ScrolledWindow -> IORef Registers -> IO ()
 quitProgram tabla reg = do
