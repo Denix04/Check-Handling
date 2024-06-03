@@ -28,43 +28,45 @@ dateCorroboration :: Entry -> EventM EFocus Bool
 dateCorroboration entry = liftIO $ do
     date <- (strToDate . glibToString) <$> entryGetText entry
     case date of
-        Nothing -> widgetGrabFocus entry
-        Just date -> entrySetText entry $ show date
+        Left _ -> widgetGrabFocus entry
+        Right date -> entrySetText entry $ show date
     return False
 
 checkIdCorroboration :: Entry -> EventM EFocus Bool
 checkIdCorroboration entry = liftIO $ do
-    checkId <- strToNumber <$> entryGetText entry :: IO (Maybe Int)
+    checkId <- strToCheckId <$> entryGetText entry
     case checkId of
-        Nothing -> widgetGrabFocus entry
-        Just num -> putStrLn $ show num
+        Left _ -> widgetGrabFocus entry
+        Right num -> putStrLn $ show num
     return False
 
 typeOpCorroboration :: Entry -> EventM EFocus Bool
 typeOpCorroboration entry = liftIO $ do
     typeOp <- (guesTypeOp . glibToString) <$> entryGetText entry
     case typeOp of
-        Nothing -> widgetGrabFocus entry
-        Just tOp -> entrySetText entry $ typeOpToStr tOp
+        Left _ -> widgetGrabFocus entry
+        Right tOp -> entrySetText entry $ typeOpToStr tOp
     return False
 
 
 amountCorroboration :: Entry -> EventM EFocus Bool
 amountCorroboration entry = liftIO $ do
-    amount <- strToNumber <$> entryGetText entry :: IO (Maybe Double)
+    amount <- strToAmount <$> entryGetText entry
     case amount of
-        Nothing -> widgetGrabFocus entry
-        Just num -> putStrLn $ show num
+        Left _ -> widgetGrabFocus entry
+        Right num -> putStrLn $ show num
     return False
 
 descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
 descCorroboration box registers = liftIO $ do
     regs <- listToRegister <$> getTextCell box
-    maybe notComplete (appendRegister registers) regs
+    either (notComplete box) (appendRegister registers) regs
     return False
 
     where
-        notComplete = putStrLn "No Esta lleno los campos"
+        notComplete box n = 
+            containerGetChildren box >>= \boxs ->
+            widgetGrabFocus $ boxs !! n
 
         appendRegister :: IORef Registers -> Register -> IO ()
         appendRegister register new = 
@@ -79,7 +81,7 @@ descCorroboration box registers = liftIO $ do
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
 cellManipulation box registers _ = do
     reg <- listToRegister <$> getTextCell box
-    maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
+    either (\_ -> putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
 quitProgram :: IORef Registers -> IO ()
 quitProgram reg =
