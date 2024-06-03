@@ -3,7 +3,6 @@ module UI where
 import Graphics.UI.Gtk
 import Data.IORef
 import GtkExtension
-import SignalHandlers
 import Data
 
 mainWindow :: IO Window
@@ -13,14 +12,12 @@ mainWindow = do
 
     return window
 
-
 mainContainer :: Window -> IO VBox
 mainContainer window = do
     mainCont <- vBoxNew False 5
     containerAdd window mainCont
 
     return mainCont
-
 
 menuBar :: VBox -> IO ()
 menuBar mainCont = do
@@ -32,7 +29,6 @@ menuBar mainCont = do
     opHelp <- newMenuOption "Help" ["Atajos","Licencia","Sobre"]
 
     boxPackStartGrow menuBar [file,opVista,opHelp] 0
-
 
 headerRow :: VBox -> IO ()
 headerRow mainCont = do
@@ -48,7 +44,6 @@ headerRow mainCont = do
     let buttons = [fechaBut,numBut,tipoBut,montoBut,descBut]
     boxPackStartGrow header buttons 0
 
-
 mainTable :: VBox -> IORef Registers -> IO ScrolledWindow
 mainTable mainCont registers = do
     table <- newTable registers
@@ -59,7 +54,6 @@ mainTable mainCont registers = do
 
     return table
    
-
 foot :: VBox -> IO ()
 foot mainCont = do
     foot <- hBoxNew False 0

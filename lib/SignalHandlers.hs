@@ -58,23 +58,31 @@ amountCorroboration entry = liftIO $ do
     return False
 
 descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
-descCorroboration box reg = liftIO $ do
-    reg <- listToRegister <$> getTextCell box
-    maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
+descCorroboration box registers = liftIO $ do
+    regs <- listToRegister <$> getTextCell box
+    maybe notComplete (appendRegister registers) regs
     return False
+
+    where
+        notComplete = putStrLn "No Esta lleno los campos"
+
+        appendRegister :: IORef Registers -> Register -> IO ()
+        appendRegister register new = 
+            appendIORef register new >>
+            readIORef register >>= (putStrLn . show)
+
+        appendIORef :: IORef Registers -> Register -> IO ()
+        appendIORef regs n =
+            readIORef regs >>= \registers -> writeIORef regs (n:registers)
+
 
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
 cellManipulation box registers _ = do
     reg <- listToRegister <$> getTextCell box
     maybe (putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
-quitProgram :: ScrolledWindow -> IORef Registers -> IO ()
-quitProgram tabla reg = do
-    datos <- strToRegisters <$> getDataTable tabla
-
-    writeIORef reg datos 
-    registros <- readIORef reg
-    putStrLn $ show registros
-
+quitProgram :: IORef Registers -> IO ()
+quitProgram reg =
+    readIORef reg >>= putStrLn . show >>
     mainQuit
 

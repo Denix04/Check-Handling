@@ -22,6 +22,6 @@ main = do
     foot mainCont
 
     widgetShowAll window
-    _ <- on window objectDestroy $ quitProgram tabla registers
+    _ <- on window objectDestroy $ quitProgram registers
 
     mainGUI
