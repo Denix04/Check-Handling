@@ -85,17 +85,17 @@ appendCell scroll registers =
 -- Table
 -----------------------------
 
-newTable :: IO ScrolledWindow
-newTable = do
+newTable :: IORef Registers -> IO ScrolledWindow
+newTable registers = do
     scroll <- scrolledWindowNew Nothing Nothing
     box' <- viewportNew Nothing Nothing
     box <- vBoxNew True 0
     containerAdd scroll box'
     containerAdd box' box
 
-    cell <- newCell
+    cell <- newCell registers
 
-    boxPackStart box (cellBox cell) PackNatural 0
+    boxPackStart box cell PackNatural 0
 
     return scroll
 

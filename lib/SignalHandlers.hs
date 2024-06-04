@@ -27,34 +27,25 @@ shortCutsManage window =
 dateCorroboration :: Entry -> EventM EFocus Bool
 dateCorroboration entry = liftIO $ do
     date <- (strToDate . glibToString) <$> entryGetText entry
-    case date of
-        Left _ -> widgetGrabFocus entry
-        Right date -> entrySetText entry $ show date
+    either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) date
     return False
 
 checkIdCorroboration :: Entry -> EventM EFocus Bool
 checkIdCorroboration entry = liftIO $ do
     checkId <- strToCheckId <$> entryGetText entry
-    case checkId of
-        Left _ -> widgetGrabFocus entry
-        Right num -> putStrLn $ show num
+    either (\_ -> widgetGrabFocus entry) (putStrLn . show) checkId
     return False
 
 typeOpCorroboration :: Entry -> EventM EFocus Bool
 typeOpCorroboration entry = liftIO $ do
-    typeOp <- (guesTypeOp . glibToString) <$> entryGetText entry
-    case typeOp of
-        Left _ -> widgetGrabFocus entry
-        Right tOp -> entrySetText entry $ typeOpToStr tOp
+    tOp <- (guesTypeOp . glibToString) <$> entryGetText entry
+    either (\_ -> widgetGrabFocus entry) (entrySetText entry . typeOpToStr) tOp
     return False
-
 
 amountCorroboration :: Entry -> EventM EFocus Bool
 amountCorroboration entry = liftIO $ do
     amount <- strToAmount <$> entryGetText entry
-    case amount of
-        Left _ -> widgetGrabFocus entry
-        Right num -> putStrLn $ show num
+    either (\_ -> widgetGrabFocus entry) (putStrLn . show) amount
     return False
 
 descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
@@ -68,15 +59,8 @@ descCorroboration box registers = liftIO $ do
             containerGetChildren box >>= \boxs ->
             widgetGrabFocus $ boxs !! n
 
-        appendRegister :: IORef Registers -> Register -> IO ()
-        appendRegister register new = 
-            appendIORef register new >>
-            readIORef register >>= (putStrLn . show)
-
-        appendIORef :: IORef Registers -> Register -> IO ()
-        appendIORef regs n =
-            readIORef regs >>= \registers -> writeIORef regs (n:registers)
-
+        appendRegister regs new =
+            readIORef regs >>= \r -> writeIORef regs (new:r)
 
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
 cellManipulation box registers _ = do
@@ -84,7 +68,4 @@ cellManipulation box registers _ = do
     either (\_ -> putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
 quitProgram :: IORef Registers -> IO ()
-quitProgram reg =
-    readIORef reg >>= putStrLn . show >>
-    mainQuit
-
+quitProgram reg = readIORef reg >>= putStrLn . show >> mainQuit
