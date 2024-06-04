@@ -24,59 +24,67 @@ shortCutsManage window =
                 _ -> liftIO $ putStrLn nose >>
                     return False
 
-
 dateCorroboration :: Entry -> EventM EFocus Bool
 dateCorroboration entry = liftIO $ do
     date <- (strToDate . glibToString) <$> entryGetText entry
     case date of
-        Nothing -> widgetGrabFocus entry
-        Just date -> entrySetText entry $ show date
+        Left _ -> widgetGrabFocus entry
+        Right date -> entrySetText entry $ show date
     return False
 
 checkIdCorroboration :: Entry -> EventM EFocus Bool
 checkIdCorroboration entry = liftIO $ do
-    checkId <- strToNumber <$> entryGetText entry :: IO (Maybe Int)
+    checkId <- strToCheckId <$> entryGetText entry
     case checkId of
-        Nothing -> widgetGrabFocus entry
-        Just num -> putStrLn $ show num
+        Left _ -> widgetGrabFocus entry
+        Right num -> putStrLn $ show num
     return False
 
 typeOpCorroboration :: Entry -> EventM EFocus Bool
 typeOpCorroboration entry = liftIO $ do
     typeOp <- (guesTypeOp . glibToString) <$> entryGetText entry
     case typeOp of
-        Nothing -> widgetGrabFocus entry
-        Just tOp -> entrySetText entry $ typeOpToStr tOp
+        Left _ -> widgetGrabFocus entry
+        Right tOp -> entrySetText entry $ typeOpToStr tOp
     return False
 
 
 amountCorroboration :: Entry -> EventM EFocus Bool
 amountCorroboration entry = liftIO $ do
-    amount <- strToNumber <$> entryGetText entry :: IO (Maybe Double)
+    amount <- strToAmount <$> entryGetText entry
     case amount of
-        Nothing -> widgetGrabFocus entry
-        Just num -> putStrLn $ show num
+        Left _ -> widgetGrabFocus entry
+        Right num -> putStrLn $ show num
     return False
 
-descCorroboration :: EventM EFocus Bool
-descCorroboration = do
-    liftIO $ putStrLn "Chau Description"
+descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
+descCorroboration box registers = liftIO $ do
+    regs <- listToRegister <$> getTextCell box
+    either (notComplete box) (appendRegister registers) regs
     return False
+
+    where
+        notComplete box n = 
+            containerGetChildren box >>= \boxs ->
+            widgetGrabFocus $ boxs !! n
+
+        appendRegister :: IORef Registers -> Register -> IO ()
+        appendRegister register new = 
+            appendIORef register new >>
+            readIORef register >>= (putStrLn . show)
+
+        appendIORef :: IORef Registers -> Register -> IO ()
+        appendIORef regs n =
+            readIORef regs >>= \registers -> writeIORef regs (n:registers)
+
 
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
-cellManipulation box registers wid = liftIO $ do
-    mayInfo <- listToRegister <$> getTextCell box
-    case mayInfo of
-        Just info -> putStrLn $ show info
-        Nothing -> putStrLn "No esta completa la casilla"
+cellManipulation box registers _ = do
+    reg <- listToRegister <$> getTextCell box
+    either (\_ -> putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
-quitProgram :: ScrolledWindow -> IORef Registers -> IO ()
-quitProgram tabla reg = do
-    datos <- strToRegisters <$> getDataTable tabla
-
-    writeIORef reg datos 
-    registros <- readIORef reg
-    putStrLn $ show registros
-
+quitProgram :: IORef Registers -> IO ()
+quitProgram reg =
+    readIORef reg >>= putStrLn . show >>
     mainQuit
 
