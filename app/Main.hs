@@ -7,6 +7,9 @@ import DataRetrieve
 import DataManipulation
 import SignalHandlers
 import UI
+
+loadProgramm :: (IORef Double,IORef Registers)
+loadProgramm = undefined
     
 main :: IO ()
 main = do
@@ -22,6 +25,6 @@ main = do
     foot mainCont
 
     widgetShowAll window
-    _ <- on window objectDestroy $ quitProgram registers
+    _ <- on window objectDestroy $ quitProgram "prueba.csv" registers
 
     mainGUI

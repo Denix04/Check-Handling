@@ -6,6 +6,7 @@ data Date = Date {
     year :: Int }
 
 data TypeOperation = Income | Egress | ToEgress | None
+    deriving (Eq)
 
 data Register = 
     Register {

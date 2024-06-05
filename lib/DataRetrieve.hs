@@ -27,3 +27,7 @@ getDataEntries boxes = forM boxes getTextCell
 getTextCell :: HBox -> IO [String]
 getTextCell b = containerGetChildren b >>= mapM getText
     where getText = entryGetText . castToEntry
+
+compareHbox :: ScrolledWindow -> IO [Bool]
+compareHbox scroll =
+    getEntriesTable scroll >>= \xs -> return $ [ x == y | x <- xs ,y <- xs] 

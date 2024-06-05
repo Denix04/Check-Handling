@@ -35,8 +35,7 @@ load' path = do
                 putStrLn ("Wasn't posible load the file" ++ show ex) >>
                 return Nothing
 
-        read [] = return (Just [])
-        read d = return (Just (map (split ',') (lines d)))
+        read d = return $ Just $ map (split ',') $ lines d
 
 toRegisterCsv :: Register -> String
 toRegisterCsv (Register (Date d m y) state checkId amount desc) =
@@ -45,20 +44,19 @@ toRegisterCsv (Register (Date d m y) state checkId amount desc) =
     show y ++ "," ++ 
     show state ++ "," ++ 
     show checkId ++ "," ++ 
-    show amount ++ 
-    desc
+    show amount ++ "," ++
+    desc ++ "\n"
 
 toCsv :: Registers -> String
 toCsv regs = unlines (map toRegisterCsv regs)
 
-
 save :: String -> IORef Registers -> IO ()
-save path regs = do
-    info <- show <$> readIORef regs
+save path registers = do
+    info <- (concat . map toRegisterCsv) <$> readIORef registers
     dataCsv <- try (writeFile path info) :: IO (Either IOError ())
-    case dataCsv of
-        Left ex -> putStrLn $ "Fail to save the file" ++ show ex
-        Right _ -> putStrLn "File saved succesfully"
+    either (\ex -> putStrLn $ "Fail to save the file" ++ show ex)
+           (\_ -> putStrLn "File saved succesfully")
+           dataCsv
 
 -----------------------------
 -- Utilities

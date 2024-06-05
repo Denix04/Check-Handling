@@ -8,6 +8,8 @@ import Data.IORef
 import Data
 import DataManipulation
 import DataRetrieve
+import CSV
+import Functionalities
 
 shortCutsManage :: WidgetClass object => object -> IO (ConnectId object)
 shortCutsManage window = 
@@ -67,5 +69,9 @@ cellManipulation box registers _ = do
     reg <- listToRegister <$> getTextCell box
     either (\_ -> putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
-quitProgram :: IORef Registers -> IO ()
-quitProgram reg = readIORef reg >>= putStrLn . show >> mainQuit
+quitProgram :: String -> IORef Registers -> IO ()
+quitProgram path reg = do
+    info <- readIORef reg
+    (putStrLn . show) info
+    save path reg
+    mainQuit
