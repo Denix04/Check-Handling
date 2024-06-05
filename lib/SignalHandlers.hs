@@ -32,20 +32,26 @@ dateCorroboration entry = liftIO $ do
     either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) date
     return False
 
-checkIdCorroboration :: Entry -> EventM EFocus Bool
-checkIdCorroboration entry = liftIO $ do
-    checkId <- strToCheckId <$> entryGetText entry
-    either (\_ -> widgetGrabFocus entry) (putStrLn . show) checkId
+opTypeCorroboration :: Entry -> EventM EFocus Bool
+opTypeCorroboration entry = liftIO $ do
+    tOp <- (strToOpType . glibToString) <$> entryGetText entry
+    either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) tOp
     return False
 
-typeOpCorroboration :: Entry -> EventM EFocus Bool
-typeOpCorroboration entry = liftIO $ do
-    tOp <- (guesTypeOp . glibToString) <$> entryGetText entry
-    either (\_ -> widgetGrabFocus entry) (entrySetText entry . typeOpToStr) tOp
+opMethodCorroboration :: Entry -> EventM EFocus Bool
+opMethodCorroboration entry = liftIO $ do
+    tOp <- (strToOpMethod . glibToString) <$> entryGetText entry
+    either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) tOp
     return False
 
-amountCorroboration :: Entry -> EventM EFocus Bool
-amountCorroboration entry = liftIO $ do
+opIdCorroboration :: Entry -> EventM EFocus Bool
+opIdCorroboration entry = liftIO $ do
+    opId <- strToOpId <$> entryGetText entry
+    either (\_ -> widgetGrabFocus entry) (putStrLn . show) opId
+    return False
+
+opAmtCorroboration :: Entry -> EventM EFocus Bool
+opAmtCorroboration entry = liftIO $ do
     amount <- strToAmount <$> entryGetText entry
     either (\_ -> widgetGrabFocus entry) (putStrLn . show) amount
     return False

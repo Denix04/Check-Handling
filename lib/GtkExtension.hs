@@ -6,17 +6,18 @@ import Graphics.UI.Gtk
 import SignalHandlers
 import Data
 
-type Cell = HBox
+data Cell = Cell {
+    cell :: HBox,
+    cellDate :: Entry,
+    cellOpType :: Entry,
+    cellOpMethod :: Entry,
+    cellOpId :: Entry,
+    cellOpAmt :: Entry,
+    cellDescription :: Entry,
+    accounted :: Bool }
 
-getDataEntry :: ContainerClass a => a -> IO [String]
-getDataEntry con =
-    containerGetChildren con >>=
-    filterM (\wid -> (=="GtkEntry") <$> typeWidget wid) >>=
-    (\x -> return $ mapText x) >>= 
-    (\s -> sequence s)
-
-    where 
-        mapText = fmap (entryGetText . castToEntry)
+instance Eq Cell where
+    c1 == c2 = cell c1 == cell c2
 
 -----------------------------
 -- Menu
@@ -48,21 +49,24 @@ newCell registers = do
     cell <- hBoxNew False 0
 
     date <- entryNew
-    checkId <- entryNew
-    typeOp <- entryNew
-    amount <- entryNew
+    opType <- entryNew
+    opMethod <- entryNew
+    opId <- entryNew
+    opAmt <- entryNew
     desc <- entryNew
-    widgetSetName desc "description"
+    --widgetSetName desc "description"
 
-    boxPackStartGrow cell [date,checkId,typeOp,amount,desc] 0
+
+    boxPackStartGrow cell [date,opType,opMethod,opId,opAmt,desc] 0
 
     _ <- on date focusOutEvent $ dateCorroboration date
-    _ <- on checkId focusOutEvent $ checkIdCorroboration checkId
-    _ <- on typeOp focusOutEvent $ typeOpCorroboration typeOp
-    _ <- on amount focusOutEvent $ amountCorroboration amount
+    _ <- on opType focusOutEvent $ opTypeCorroboration opType
+    _ <- on opMethod focusOutEvent $ opMethodCorroboration opMethod
+    _ <- on opId focusOutEvent $ opIdCorroboration opId
+    _ <- on opAmt focusOutEvent $ opAmtCorroboration opAmt
     _ <- on desc focusOutEvent $ descCorroboration cell registers
 
-    return cell
+    return $ Cell cell date opType opMethod opId opAmt desc False
 
 appendCell :: ScrolledWindow -> IORef Registers -> IO ()
 appendCell scroll registers = 
@@ -79,7 +83,7 @@ appendCell scroll registers =
           error "Main table not have been generated correctly"
       viewportBoxesManagent (x:_) = return $ castToVBox x
 
-      appendBox box c = boxPackStart box c PackNatural 0
+      appendBox box c = boxPackStart box (cell c) PackNatural 0
 
 -----------------------------
 -- Table
@@ -93,9 +97,9 @@ newTable registers = do
     containerAdd scroll box'
     containerAdd box' box
 
-    cell <- newCell registers
+    c1 <- newCell registers
 
-    boxPackStart box cell PackNatural 0
+    boxPackStart box (cell c1) PackNatural 0
 
     return scroll
 

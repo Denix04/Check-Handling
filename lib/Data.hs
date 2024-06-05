@@ -5,38 +5,54 @@ data Date = Date {
     month :: Int,
     year :: Int }
 
-data TypeOperation = Income | Egress | ToEgress | None
+data OpType = Income | Egress | ToEgress
     deriving (Eq)
+
+data OpMethod = Transfer | Check | Cash | BankExpense
+    deriving (Eq)
+
+data Id = Num Int | Person String
 
 data Register = 
     Register {
         date :: Date,
-        state :: TypeOperation,
-        checkId :: Int,
-        amount :: Double,
+        opType :: OpType,
+        opMethod :: OpMethod,
+        opId :: Id,
+        opAmt :: Double,
         description :: String }
 
 type Registers = [Register]
 
 instance Show Register where
-    show (Register d s c a des) = 
-        "Registro\n" ++
-        "\t" ++ show d ++ "\n" ++
-        "\t" ++ show s ++ "\n" ++
-        "\t" ++ show c ++ "\n" ++
-        "\t" ++ show a ++ "\n" ++
-        "\t" ++ show des ++ "\n"
+    show (Register date ot om ci oa des) = 
+        show date ++ "," ++
+        show ot ++ "," ++
+        show om ++ "," ++
+        show ci ++ "," ++
+        show oa ++ "," ++
+        show des ++ "\n"
 
 instance Show Date where
-    show d = (show $ day d) ++ "/" ++ 
-             (show $ month d) ++ "/" ++ 
-             (show $ year d)
+    show (Date d m y) =
+        show d ++ "," ++
+        show m ++ "," ++
+        show y
 
-instance Show TypeOperation where
+instance Show OpType where
     show Income = "Ingreso"
     show Egress = "Egreso"
     show ToEgress = "A Egresar"
-    show None = ""
+
+instance Show OpMethod where
+    show Transfer = "Transferencia"
+    show Check = "Cheque"
+    show Cash = "Efectivo"
+    show BankExpense = "Banco"
+
+instance Show Id where
+    show (Num id) = show id
+    show (Person id) = id
 
 validDate :: Date -> Bool
 validDate (Date d m y)

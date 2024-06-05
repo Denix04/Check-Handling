@@ -36,12 +36,13 @@ headerRow mainCont = do
     boxPackStart mainCont header PackNatural 0
 
     fechaBut <- buttonNewWithLabel "Fecha"
-    numBut <- buttonNewWithLabel "n°"
     tipoBut <- buttonNewWithLabel "Tipo"
+    methodBut <- buttonNewWithLabel "Metodo"
+    numBut <- buttonNewWithLabel "n°"
     montoBut <- buttonNewWithLabel "Monto"
     descBut <- buttonNewWithLabel "Descripcion"
 
-    let buttons = [fechaBut,numBut,tipoBut,montoBut,descBut]
+    let buttons = [fechaBut,tipoBut,methodBut,numBut,montoBut,descBut]
     boxPackStartGrow header buttons 0
 
 mainTable :: VBox -> IORef Registers -> IO ScrolledWindow

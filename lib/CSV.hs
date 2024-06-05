@@ -37,22 +37,12 @@ load' path = do
 
         read d = return $ Just $ map (split ',') $ lines d
 
-toRegisterCsv :: Register -> String
-toRegisterCsv (Register (Date d m y) state checkId amount desc) =
-    show d ++ "," ++ 
-    show m ++ "," ++ 
-    show y ++ "," ++ 
-    show state ++ "," ++ 
-    show checkId ++ "," ++ 
-    show amount ++ "," ++
-    desc ++ "\n"
-
 toCsv :: Registers -> String
-toCsv regs = unlines (map toRegisterCsv regs)
+toCsv regs = unlines (map show regs)
 
 save :: String -> IORef Registers -> IO ()
 save path registers = do
-    info <- (concat . map toRegisterCsv) <$> readIORef registers
+    info <- (concat . map show) <$> readIORef registers
     dataCsv <- try (writeFile path info) :: IO (Either IOError ())
     either (\ex -> putStrLn $ "Fail to save the file" ++ show ex)
            (\_ -> putStrLn "File saved succesfully")

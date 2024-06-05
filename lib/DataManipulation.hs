@@ -19,66 +19,58 @@ strToDate s =
         parseToDate _ = Left 0
 
 -----------------------------
--- Type Operation
+-- Type 1
 -----------------------------
 
-typeOpToStr :: TypeOperation -> String
-typeOpToStr Income = "Ingreso"
-typeOpToStr Egress = "Egreso"
-typeOpToStr ToEgress = "A Egresar"
-
-guesTypeOp :: String -> Either Int TypeOperation
-guesTypeOp [] = Left 2
-guesTypeOp s = (mostSimilar . coincidences . toLowerCase) s
-    where
-        toLowerCase = map toLower
-
-        coincidences :: String -> [(TypeOperation, Int)]
-        coincidences s = zip typeOp $ map (aux 0 s) typeOpStr
-            where 
-                aux acc _ [] = acc
-                aux acc [] _ = acc
-                aux acc (s:ss) (x:xs) 
-                    | s == x = aux (acc+1) ss xs
-                    | otherwise = aux (acc) ss xs
-
-                typeOp = [Income,Egress,ToEgress]
-                typeOpStr = ["ingreso","egreso","a egresar"]
-
-
-        mostSimilar :: [(TypeOperation, Int)] -> Either Int TypeOperation
-        mostSimilar xs = aux 0 (Left 2) xs
-            where 
-                aux _ ret [] = ret
-                aux acc ret ((typ,cont):rest)
-                    | cont > acc = aux cont (Right typ) rest
-                    | otherwise = aux acc ret rest
+strToOpType :: String -> Either Int OpType
+strToOpType s = 
+    case guessConstructor s [Income,Egress,ToEgress] of
+        Nothing -> Left 1
+        Just opType -> Right opType
 
 -----------------------------
--- Amount
+-- Method 2
 -----------------------------
 
-strToCheckId :: String -> Either Int Int
-strToCheckId s = maybe (Left 1) (\x -> Right x) $ strToNumber s
+strToOpMethod :: String -> Either Int OpMethod
+strToOpMethod s = 
+    case guessConstructor s [Transfer,Check,Cash,BankExpense] of
+        Nothing -> Left 2
+        Just opMethod -> Right opMethod
+
+-----------------------------
+-- Id 3
+-----------------------------
+
+strToOpId :: String -> Either Int Id
+strToOpId [] = Left 3
+strToOpId s =
+    maybe (Right $ Person s) (\x -> Right $ Num x) $ strToNumber s
+
+-----------------------------
+-- Amount 4
+-----------------------------
 
 strToAmount :: String -> Either Int Double
-strToAmount s = maybe (Left 3) (\x -> Right x) $ strToNumber s
+strToAmount s = maybe (Left 4) (\x -> Right x) $ strToNumber s
 
 -----------------------------
 -- Registers
 -----------------------------
 
 listToRegister :: [String] -> Either Int Register
-listToRegister [date',checkId',state',amount',desc] =
+listToRegister [date',opType',opMethod',opId',opAmt',desc] =
     strToDate date' >>= \d ->
-    strToCheckId checkId' >>= \c ->
-    guesTypeOp state' >>= \s ->
-    strToAmount amount' >>= \a ->
+    strToOpType opType' >>= \t ->
+    strToOpMethod opMethod' >>= \m ->
+    strToOpId opId' >>= \i ->
+    strToAmount opAmt' >>= \a ->
     Right $ Register { 
         date = (d),
-        state = (s),
-        checkId = (c),
-        amount = (a),
+        opType = (t),
+        opMethod = (m),
+        opId = (i),
+        opAmt = (a),
         description = desc }
 listToRegister _ = Left 1
 
@@ -100,19 +92,38 @@ separateBy s sep = aux s sep [] []
             | otherwise  = aux sep xs (acc ++ [x]) ss
 
 strToNumber ::Read a => String -> Maybe a
-strToNumber [] = Nothing
 strToNumber s = 
-    if validNumber s 
-        then Just $ read s 
-        else Nothing
-    where
-        validNumber s = foldr (&&) True $ map validChar s
-
-        validChar c = isDigit c || c == '.'
+    case reads s of
+        [(n,"")] -> Just n
+        _ -> Nothing
 
 catEithers :: [Either a b] -> [b]
 catEithers (x:xs) =
     case x of
         Left _ -> catEithers xs
         Right e -> e:catEithers xs
-    
+
+guessConstructor :: Show a => String -> [a] -> Maybe a
+guessConstructor s xs = (mostSimilar . (coincidences xs) . toLowerCase) s
+    where
+        toLowerCase = map toLower
+
+        coincidences :: Show a => [a] -> String -> [(a, Int)]
+        coincidences xs s = zip xs $ map ((count 0 s) . toLowerCase . show) xs
+            where 
+                count acc _ [] = acc
+                count acc [] _ = acc
+                count acc (s:ss) (x:xs) 
+                    | s == x = count (acc+1) ss xs
+                    | otherwise = count (acc) ss xs
+
+
+        mostSimilar :: [(a, Int)] -> Maybe a
+        mostSimilar xs = aux 0 Nothing xs
+            where 
+                aux _ return [] = return
+                aux acc return ((typ,cont):rest)
+                    | cont > acc = aux cont (Just typ) rest
+                    | otherwise = aux acc return rest
+guessConstructor _ _ = Nothing
+

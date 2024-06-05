@@ -1,7 +1,6 @@
 module Functionalities where
 
 import Data.IORef
-import Control.Monad.IO.Class (liftIO)
 import Data
 
 calculateTotal :: IORef Double -> IORef Registers -> IO ()
@@ -12,6 +11,6 @@ calculateTotal total registers = do
     where
         calculate [] = 0
         calculate (x:xs)
-            | state x == Income = amount x + calculate xs
-            | state x == Egress = (- amount x) + calculate xs
-            | state x == ToEgress = calculate xs
+            | opType x == Income = opAmt x + calculate xs
+            | opType x == Egress = (- opAmt x) + calculate xs
+            | opType x == ToEgress = calculate xs
