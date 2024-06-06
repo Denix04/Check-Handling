@@ -10,6 +10,7 @@ import DataManipulation
 import DataRetrieve
 import CSV
 import Functionalities
+import Utilities
 
 shortCutsManage :: WidgetClass object => object -> IO (ConnectId object)
 shortCutsManage window = 
@@ -66,16 +67,13 @@ opAmtCorroboration entry = liftIO $ do
 descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
 descCorroboration box registers = liftIO $ do
     regs <- listToRegister <$> getTextCell box
-    either (notComplete box) (appendRegister registers) regs
+    either (notComplete box) (appendIORef registers) regs
     return False
 
     where
         notComplete box n = 
             containerGetChildren box >>= \boxs ->
             widgetGrabFocus $ boxs !! n
-
-        appendRegister regs new =
-            readIORef regs >>= \r -> writeIORef regs (new:r)
 
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
 cellManipulation box registers _ = do

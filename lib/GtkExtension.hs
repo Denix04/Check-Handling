@@ -70,6 +70,7 @@ newCell registers = do
     _ <- on opAmt focusOutEvent $ opAmtCorroboration opAmt
     _ <- on desc focusOutEvent $ descCorroboration cell registers
 
+    --appendIORef
     return $ Cell cell date opType opMethod opId opAmt desc False
 
 appendCell :: ScrolledWindow -> IORef Registers -> IO ()
