@@ -6,6 +6,7 @@ import Data
 import DataRetrieve
 import DataManipulation
 import SignalHandlers
+import GtkExtension
 import UI
 
 loadProgramm :: (IORef Double,IORef Registers)
@@ -18,6 +19,7 @@ main = do
     mainCont <- mainContainer window
 
     registers <- newIORef [] :: IO (IORef Registers)
+    cells <- newIORef [] :: IO (IORef Cells)
 
     menuBar mainCont
     headerRow mainCont

@@ -6,6 +6,7 @@ import Data.Maybe
 import Control.Exception
 import Data.IORef
 import Data
+import Utilities
 
 load :: String -> IO (Maybe [[String]])
 load path = do
@@ -47,13 +48,3 @@ save path registers = do
     either (\ex -> putStrLn $ "Fail to save the file" ++ show ex)
            (\_ -> putStrLn "File saved succesfully")
            dataCsv
-
------------------------------
--- Utilities
------------------------------
-
-split :: Char -> String -> [String]
-split _ [] = []
-split c s = [takeWhile (\x -> x /= c) s] ++ 
-           split c (drop 1 (dropWhile (\x -> x /= c) s))
-

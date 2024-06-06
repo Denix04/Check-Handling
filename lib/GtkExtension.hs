@@ -7,6 +7,7 @@ import System.Glib
 import SignalHandlers
 import Data
 import DataManipulation
+import Utilities
 
 data Cell = Cell {
     cell :: HBox,
@@ -17,6 +18,8 @@ data Cell = Cell {
     cellOpAmt :: Entry,
     cellDescription :: Entry,
     accounted :: Bool }
+
+type Cells = [Cell]
 
 instance Eq Cell where
     c1 == c2 = cell c1 == cell c2
@@ -58,7 +61,6 @@ newCell registers = do
     desc <- entryNew
     --widgetSetName desc "description"
 
-
     boxPackStartGrow cell [date,opType,opMethod,opId,opAmt,desc] 0
 
     _ <- on date focusOutEvent $ dateCorroboration date
@@ -69,8 +71,6 @@ newCell registers = do
     _ <- on desc focusOutEvent $ descCorroboration cell registers
 
     return $ Cell cell date opType opMethod opId opAmt desc False
-
-    where
 
 appendCell :: ScrolledWindow -> IORef Registers -> IO ()
 appendCell scroll registers = 
@@ -106,20 +106,3 @@ newTable registers = do
     boxPackStart box (cell c1) PackNatural 0
 
     return scroll
-
------------------------------
--- Utilities
------------------------------
-
-typeWidget :: WidgetClass a => a -> IO String
-typeWidget wid =
-    widgetPath wid >>= (\path -> let (_,_,reversedPath) = path
-    in return ((reverse . takeWhile (\x -> x /= '.')) reversedPath))
-
-boxPackStartGrow :: (BoxClass self, WidgetClass child) => 
-                    self -> [child] -> Int -> IO ()
-boxPackStartGrow _ [] _ = return ()
-boxPackStartGrow box (c:cs) pad = 
-    boxPackStart box c PackGrow pad >>
-    boxPackStartGrow box cs pad
-

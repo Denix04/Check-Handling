@@ -4,6 +4,7 @@ import Graphics.UI.Gtk
 import Data.IORef
 import GtkExtension
 import Data
+import Utilities
 
 mainWindow :: IO Window
 mainWindow = do
