@@ -40,15 +40,22 @@ opTypeCorroboration entry = liftIO $ do
 
 opMethodCorroboration :: Entry -> EventM EFocus Bool
 opMethodCorroboration entry = liftIO $ do
-    tOp <- (strToOpMethod . glibToString) <$> entryGetText entry
-    either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) tOp
+    opMethod <- (strToOpMethod . glibToString) <$> entryGetText entry
+    putStrLn $ show opMethod
+    either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) opMethod
     return False
 
-opIdCorroboration :: Entry -> EventM EFocus Bool
-opIdCorroboration entry = liftIO $ do
+opIdCorroboration :: Entry -> Entry -> EventM EFocus Bool
+opIdCorroboration entry method = liftIO $ do
     opId <- strToOpId <$> entryGetText entry
-    either (\_ -> widgetGrabFocus entry) (putStrLn . show) opId
+    opMethod' <- (strToOpMethod . glibToString) <$> entryGetText method
+    either (\_ -> widgetGrabFocus entry) (testMethod entry opMethod') opId
     return False
+
+    where
+        testMethod :: Entry -> Either Int OpMethod -> Id -> IO ()
+        testMethod entry (Right Check)  (Person _) = widgetGrabFocus entry
+        testMethod _ _ id = putStrLn $ show id
 
 opAmtCorroboration :: Entry -> EventM EFocus Bool
 opAmtCorroboration entry = liftIO $ do

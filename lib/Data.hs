@@ -1,9 +1,6 @@
 module Data where
 
-data Date = Date {
-    day :: Int,
-    month :: Int,
-    year :: Int }
+data Date = Date { day :: Int, month :: Int, year :: Int }
 
 data OpType = Income | Egress | ToEgress
     deriving (Eq)

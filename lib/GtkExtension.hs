@@ -3,8 +3,10 @@ module GtkExtension where
 import Data.IORef
 import Control.Monad
 import Graphics.UI.Gtk
+import System.Glib
 import SignalHandlers
 import Data
+import DataManipulation
 
 data Cell = Cell {
     cell :: HBox,
@@ -62,11 +64,13 @@ newCell registers = do
     _ <- on date focusOutEvent $ dateCorroboration date
     _ <- on opType focusOutEvent $ opTypeCorroboration opType
     _ <- on opMethod focusOutEvent $ opMethodCorroboration opMethod
-    _ <- on opId focusOutEvent $ opIdCorroboration opId
+    _ <- on opId focusOutEvent $ opIdCorroboration opId opMethod
     _ <- on opAmt focusOutEvent $ opAmtCorroboration opAmt
     _ <- on desc focusOutEvent $ descCorroboration cell registers
 
     return $ Cell cell date opType opMethod opId opAmt desc False
+
+    where
 
 appendCell :: ScrolledWindow -> IORef Registers -> IO ()
 appendCell scroll registers = 
