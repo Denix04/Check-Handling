@@ -23,10 +23,10 @@ main = do
 
     menuBar mainCont
     headerRow mainCont
-    tabla <- mainTable mainCont registers
+    tabla <- mainTable mainCont registers cells
     foot mainCont
 
     widgetShowAll window
-    _ <- on window objectDestroy $ quitProgram "prueba.csv" registers
+    _ <- on window objectDestroy $ quitProgram "prueba.csv" registers --cells
 
     mainGUI

@@ -9,21 +9,6 @@ import Data
 import DataManipulation
 import Utilities
 
-data Cell = Cell {
-    cell :: HBox,
-    cellDate :: Entry,
-    cellOpType :: Entry,
-    cellOpMethod :: Entry,
-    cellOpId :: Entry,
-    cellOpAmt :: Entry,
-    cellDescription :: Entry,
-    accounted :: Bool }
-
-type Cells = [Cell]
-
-instance Eq Cell where
-    c1 == c2 = cell c1 == cell c2
-
 -----------------------------
 -- Menu
 -----------------------------
@@ -49,8 +34,8 @@ newMenuOption s ops = do
 -- Cells
 -----------------------------
 
-newCell :: IORef Registers -> IO Cell
-newCell registers = do
+newCell :: IORef Registers -> IORef Cells -> IO Cell
+newCell registers cells = do
     cell <- hBoxNew False 0
 
     date <- entryNew
@@ -68,17 +53,19 @@ newCell registers = do
     _ <- on opMethod focusOutEvent $ opMethodCorroboration opMethod
     _ <- on opId focusOutEvent $ opIdCorroboration opId opMethod
     _ <- on opAmt focusOutEvent $ opAmtCorroboration opAmt
-    _ <- on desc focusOutEvent $ descCorroboration cell registers
+    _ <- on desc focusOutEvent $ descCorroboration cell registers cells
 
-    --appendIORef
-    return $ Cell cell date opType opMethod opId opAmt desc False
+    accounted' <- newIORef False
+    let cell' = Cell cell date opType opMethod opId opAmt desc accounted'
+    appendIORef cells cell'
+    return $ cell'
 
-appendCell :: ScrolledWindow -> IORef Registers -> IO ()
-appendCell scroll registers = 
+appendCell :: ScrolledWindow -> IORef Registers -> IORef Cells -> IO ()
+appendCell scroll registers cells = 
     containerGetChildren scroll >>= \vp ->
     viewportGetChilds vp >>= 
     viewportBoxesManagent >>= \vbox ->
-    newCell registers >>= \c -> appendBox vbox c
+    newCell registers cells >>= \c -> appendBox vbox c
 
     where
       viewportGetChilds vp = 
@@ -101,9 +88,5 @@ newTable registers = do
     box <- vBoxNew True 0
     containerAdd scroll box'
     containerAdd box' box
-
-    c1 <- newCell registers
-
-    boxPackStart box (cell c1) PackNatural 0
 
     return scroll

@@ -42,7 +42,6 @@ opTypeCorroboration entry = liftIO $ do
 opMethodCorroboration :: Entry -> EventM EFocus Bool
 opMethodCorroboration entry = liftIO $ do
     opMethod <- (strToOpMethod . glibToString) <$> entryGetText entry
-    putStrLn $ show opMethod
     either (\_ -> widgetGrabFocus entry) (entrySetText entry . show) opMethod
     return False
 
@@ -56,24 +55,43 @@ opIdCorroboration entry method = liftIO $ do
     where
         testMethod :: Entry -> Either Int OpMethod -> Id -> IO ()
         testMethod entry (Right Check)  (Person _) = widgetGrabFocus entry
-        testMethod _ _ id = putStrLn $ show id
+        testMethod _ _ id = return ()
 
 opAmtCorroboration :: Entry -> EventM EFocus Bool
 opAmtCorroboration entry = liftIO $ do
     amount <- strToAmount <$> entryGetText entry
-    either (\_ -> widgetGrabFocus entry) (putStrLn . show) amount
+    either (\_ -> widgetGrabFocus entry) (\_ -> return ()) amount
     return False
 
-descCorroboration :: HBox -> IORef Registers -> EventM EFocus Bool
-descCorroboration box registers = liftIO $ do
+descCorroboration :: HBox -> IORef Registers -> IORef Cells
+                     -> EventM EFocus Bool
+descCorroboration box registers cells = liftIO $ do
     regs <- listToRegister <$> getTextCell box
-    either (notComplete box) (appendIORef registers) regs
+    either (notComplete box) (complete box registers cells) regs
     return False
 
     where
         notComplete box n = 
-            containerGetChildren box >>= \boxs ->
-            widgetGrabFocus $ boxs !! n
+            containerGetChildren box >>= \entries ->
+            widgetGrabFocus $ entries !! n
+
+        complete :: HBox -> IORef Registers -> IORef Cells -> Register -> IO ()
+        complete box registers cells reg = 
+            readIORef cells >>=
+            toCounted box >>= \x ->
+            if x then appendIORef registers reg else return ()
+
+            where
+                toCounted :: HBox -> Cells -> IO Bool
+                toCounted c [] = return False
+                toCounted c (x:xs)
+                    | c == (cell x) = do
+                        acc <- readIORef $ accounted x
+                        case acc of
+                            False -> 
+                                writeIORef (accounted x) True >> return True
+                            True -> return False
+                    | otherwise = toCounted c xs
 
 cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
 cellManipulation box registers _ = do
@@ -81,8 +99,8 @@ cellManipulation box registers _ = do
     either (\_ -> putStrLn "No esta completa la casilla") (putStrLn . show) reg
 
 quitProgram :: String -> IORef Registers -> IO ()
-quitProgram path reg = do
-    info <- readIORef reg
+quitProgram path registers = do
+    info <- readIORef registers
     (putStrLn . show) info
-    save path reg
+    save path registers
     mainQuit

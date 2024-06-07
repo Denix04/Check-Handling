@@ -1,5 +1,8 @@
 module Data where
 
+import Graphics.UI.Gtk
+import Data.IORef
+
 data Date = Date { day :: Int, month :: Int, year :: Int }
 
 data OpType = Income | Egress | ToEgress
@@ -20,6 +23,21 @@ data Register =
         description :: String }
 
 type Registers = [Register]
+
+data Cell = Cell {
+    cell :: HBox,
+    cellDate :: Entry,
+    cellOpType :: Entry,
+    cellOpMethod :: Entry,
+    cellOpId :: Entry,
+    cellOpAmt :: Entry,
+    cellDescription :: Entry,
+    accounted :: IORef Bool }
+
+type Cells = [Cell]
+
+instance Eq Cell where
+    c1 == c2 = cell c1 == cell c2
 
 instance Show Register where
     show (Register date ot om ci oa des) = 

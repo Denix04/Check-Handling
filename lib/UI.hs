@@ -46,13 +46,13 @@ headerRow mainCont = do
     let buttons = [fechaBut,tipoBut,methodBut,numBut,montoBut,descBut]
     boxPackStartGrow header buttons 0
 
-mainTable :: VBox -> IORef Registers -> IO ScrolledWindow
-mainTable mainCont registers = do
+mainTable :: VBox -> IORef Registers -> IORef Cells -> IO ScrolledWindow
+mainTable mainCont registers cells = do
     table <- newTable registers
     boxPackStart mainCont table PackGrow 0
 
-    appendCell table registers
-    appendCell table registers
+    appendCell table registers cells
+    appendCell table registers cells
 
     return table
    
