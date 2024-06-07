@@ -12,21 +12,21 @@ import UI
 loadProgramm :: (IORef Double,IORef Registers)
 loadProgramm = undefined
     
+
 main :: IO ()
 main = do
     _ <- initGUI 
     window <- mainWindow
     mainCont <- mainContainer window
 
-    registers <- newIORef [] :: IO (IORef Registers)
-    cells <- newIORef [] :: IO (IORef Cells)
+    programm <- newProgramm
 
     menuBar mainCont
     headerRow mainCont
-    tabla <- mainTable mainCont registers cells
+    tabla <- mainTable mainCont programm
     foot mainCont
 
     widgetShowAll window
-    _ <- on window objectDestroy $ quitProgram "prueba.csv" registers --cells
+    _ <- on window objectDestroy $ quitProgram "prueba.csv" programm --cells
 
     mainGUI

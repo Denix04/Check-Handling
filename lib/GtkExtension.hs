@@ -9,10 +9,6 @@ import Data
 import DataManipulation
 import Utilities
 
------------------------------
--- Menu
------------------------------
-
 newMenuOption :: String -> [String] -> IO Expander
 newMenuOption s ops = do
     expander <- expanderNewWithMnemonic s 
@@ -30,12 +26,8 @@ newMenuOption s ops = do
             menuShellAppend m item
             appendOptions xs m
 
------------------------------
--- Cells
------------------------------
-
-newCell :: IORef Registers -> IORef Cells -> IO Cell
-newCell registers cells = do
+newCell :: Programm -> IO Cell
+newCell prog = do
     cell <- hBoxNew False 0
 
     date <- entryNew
@@ -53,19 +45,19 @@ newCell registers cells = do
     _ <- on opMethod focusOutEvent $ opMethodCorroboration opMethod
     _ <- on opId focusOutEvent $ opIdCorroboration opId opMethod
     _ <- on opAmt focusOutEvent $ opAmtCorroboration opAmt
-    _ <- on desc focusOutEvent $ descCorroboration cell registers cells
+    _ <- on desc focusOutEvent $ descCorroboration cell prog
 
     accounted' <- newIORef False
     let cell' = Cell cell date opType opMethod opId opAmt desc accounted'
-    appendIORef cells cell'
+    appendIORef (progCells prog) cell'
     return $ cell'
 
-appendCell :: ScrolledWindow -> IORef Registers -> IORef Cells -> IO ()
-appendCell scroll registers cells = 
+appendCell :: ScrolledWindow -> Programm -> IO ()
+appendCell scroll prog = 
     containerGetChildren scroll >>= \vp ->
     viewportGetChilds vp >>= 
     viewportBoxesManagent >>= \vbox ->
-    newCell registers cells >>= \c -> appendBox vbox c
+    newCell prog >>= \c -> appendBox vbox c
 
     where
       viewportGetChilds vp = 
@@ -77,12 +69,8 @@ appendCell scroll registers cells =
 
       appendBox box c = boxPackStart box (cell c) PackNatural 0
 
------------------------------
--- Table
------------------------------
-
-newTable :: IORef Registers -> IO ScrolledWindow
-newTable registers = do
+newTable :: IO ScrolledWindow
+newTable = do
     scroll <- scrolledWindowNew Nothing Nothing
     box' <- viewportNew Nothing Nothing
     box <- vBoxNew True 0

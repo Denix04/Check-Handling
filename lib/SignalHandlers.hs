@@ -63,11 +63,10 @@ opAmtCorroboration entry = liftIO $ do
     either (\_ -> widgetGrabFocus entry) (\_ -> return ()) amount
     return False
 
-descCorroboration :: HBox -> IORef Registers -> IORef Cells
-                     -> EventM EFocus Bool
-descCorroboration box registers cells = liftIO $ do
+descCorroboration :: HBox -> Programm -> EventM EFocus Bool
+descCorroboration box prog = liftIO $ do
     regs <- listToRegister <$> getTextCell box
-    either (notComplete box) (complete box registers cells) regs
+    either (notComplete box) (complete box prog) regs
     return False
 
     where
@@ -75,11 +74,11 @@ descCorroboration box registers cells = liftIO $ do
             containerGetChildren box >>= \entries ->
             widgetGrabFocus $ entries !! n
 
-        complete :: HBox -> IORef Registers -> IORef Cells -> Register -> IO ()
-        complete box registers cells reg = 
-            readIORef cells >>=
+        complete :: HBox -> Programm -> Register -> IO ()
+        complete box prog reg = 
+            readIORef (progCells prog) >>=
             toCounted box >>= \x ->
-            if x then appendIORef registers reg else return ()
+            if x then appendIORef (progRegisters prog) reg else return ()
 
             where
                 toCounted :: HBox -> Cells -> IO Bool
@@ -93,14 +92,9 @@ descCorroboration box registers cells = liftIO $ do
                             True -> return False
                     | otherwise = toCounted c xs
 
-cellManipulation :: HBox -> IORef Registers -> Maybe Widget -> IO ()
-cellManipulation box registers _ = do
-    reg <- listToRegister <$> getTextCell box
-    either (\_ -> putStrLn "No esta completa la casilla") (putStrLn . show) reg
-
-quitProgram :: String -> IORef Registers -> IO ()
-quitProgram path registers = do
-    info <- readIORef registers
+quitProgram :: String -> Programm -> IO ()
+quitProgram path prog = do
+    info <- readIORef (progRegisters prog)
     (putStrLn . show) info
-    save path registers
+    save path (progRegisters prog)
     mainQuit

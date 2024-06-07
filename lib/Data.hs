@@ -4,15 +4,11 @@ import Graphics.UI.Gtk
 import Data.IORef
 
 data Date = Date { day :: Int, month :: Int, year :: Int }
-
-data OpType = Income | Egress | ToEgress
-    deriving (Eq)
-
-data OpMethod = Transfer | Check | Cash | BankExpense
-    deriving (Eq)
-
+data OpType = Income | Egress | ToEgress deriving (Eq)
+data OpMethod = Transfer | Check | Cash | BankExpense deriving (Eq)
 data Id = Num Int | Person String
 
+type Registers = [Register]
 data Register = 
     Register {
         date :: Date,
@@ -22,8 +18,8 @@ data Register =
         opAmt :: Double,
         description :: String }
 
-type Registers = [Register]
 
+type Cells = [Cell]
 data Cell = Cell {
     cell :: HBox,
     cellDate :: Entry,
@@ -34,19 +30,13 @@ data Cell = Cell {
     cellDescription :: Entry,
     accounted :: IORef Bool }
 
-type Cells = [Cell]
+data Programm = Programm {
+    progRegisters :: IORef Registers,
+    progCells :: IORef Cells,
+    progTotalAmt :: IORef Double }
 
 instance Eq Cell where
     c1 == c2 = cell c1 == cell c2
-
-instance Show Register where
-    show (Register date ot om ci oa des) = 
-        show date ++ "," ++
-        show ot ++ "," ++
-        show om ++ "," ++
-        show ci ++ "," ++
-        show oa ++ "," ++
-        show des ++ "\n"
 
 instance Show Date where
     show (Date d m y) =
@@ -69,6 +59,15 @@ instance Show Id where
     show (Num id) = show id
     show (Person id) = id
 
+instance Show Register where
+    show (Register date ot om ci oa des) = 
+        show date ++ "," ++
+        show ot ++ "," ++
+        show om ++ "," ++
+        show ci ++ "," ++
+        show oa ++ "," ++
+        show des ++ "\n"
+
 validDate :: Date -> Bool
 validDate (Date d m y)
     | m `elem` [1,3,5,8,10,12] = valid31 d
@@ -90,3 +89,13 @@ validDate (Date d m y)
                   && d <= 29 = True
                 | d < 1 || d > 28 = False
                 | otherwise = True
+
+newProgramm :: IO Programm
+newProgramm = do
+    registers <- newIORef []
+    cells <- newIORef []
+    totalAmt <- newIORef 0.0
+    return $ Programm {
+            progRegisters = registers,
+            progCells = cells,
+            progTotalAmt = totalAmt }
