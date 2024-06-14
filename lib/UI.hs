@@ -56,8 +56,8 @@ mainTable mainCont prog = do
 
     return table
    
-foot :: VBox -> IO ()
-foot mainCont = do
+foot :: VBox -> Programm -> IO ()
+foot mainCont prog = do
     foot <- hBoxNew False 0
     boxPackEnd mainCont foot PackNatural 10
 
@@ -66,5 +66,4 @@ foot mainCont = do
     eti3 <- labelNewWithMnemonic "algo"
     eti4 <- labelNewWithMnemonic "Total"
 
-    boxPackStartGrow foot [eti1,eti2,eti3,eti4] 0
-
+    boxPackStartGrow foot [eti1,eti2,eti3,eti4,(progTotalLabel prog)] 0

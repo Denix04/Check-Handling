@@ -33,7 +33,8 @@ data Cell = Cell {
 data Programm = Programm {
     progRegisters :: IORef Registers,
     progCells :: IORef Cells,
-    progTotalAmt :: IORef Double }
+    progTotalAmt :: IORef Double,
+    progTotalLabel :: Label }
 
 instance Eq Cell where
     c1 == c2 = cell c1 == cell c2
@@ -95,7 +96,21 @@ newProgramm = do
     registers <- newIORef []
     cells <- newIORef []
     totalAmt <- newIORef 0.0
+    totalLabel <- labelNew $ Just "0"
     return $ Programm {
             progRegisters = registers,
             progCells = cells,
-            progTotalAmt = totalAmt }
+            progTotalAmt = totalAmt,
+            progTotalLabel = totalLabel }
+
+findCell :: Programm -> HBox -> IO (Maybe Cell)
+findCell prog box =
+    readIORef (progCells prog) >>= \cells ->
+    return $ find box cells
+
+    where
+      find :: HBox -> Cells -> Maybe Cell
+      find _ [] = Nothing
+      find box (c:cs) 
+        | cell c == box = Just c
+        | otherwise = find box cs 

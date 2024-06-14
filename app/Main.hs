@@ -24,7 +24,7 @@ main = do
     menuBar mainCont
     headerRow mainCont
     tabla <- mainTable mainCont programm
-    foot mainCont
+    foot mainCont programm
 
     widgetShowAll window
     _ <- on window objectDestroy $ quitProgram "prueba.csv" programm --cells

@@ -36,7 +36,6 @@ newCell prog = do
     opId <- entryNew
     opAmt <- entryNew
     desc <- entryNew
-    --widgetSetName desc "description"
 
     boxPackStartGrow cell [date,opType,opMethod,opId,opAmt,desc] 0
 
