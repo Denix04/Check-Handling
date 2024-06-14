@@ -76,21 +76,25 @@ descCorroboration box prog = liftIO $ do
 
         complete :: HBox -> Programm -> Register -> IO ()
         complete box prog reg = 
-            readIORef (progCells prog) >>=
-            toCounted box >>= \x ->
-            if x then appendIORef (progRegisters prog) reg else return ()
+            findCell prog box >>= \cell ->
+            maybe (return False) findIt cell >>= \x ->
+            if x then updateProgramm prog reg else return ()
 
-            where
-                toCounted :: HBox -> Cells -> IO Bool
-                toCounted c [] = return False
-                toCounted c (x:xs)
-                    | c == (cell x) = do
-                        acc <- readIORef $ accounted x
-                        case acc of
-                            False -> 
-                                writeIORef (accounted x) True >> return True
-                            True -> return False
-                    | otherwise = toCounted c xs
+        findIt :: Cell -> IO Bool
+        findIt cell = do
+            acc <- readIORef $ accounted cell
+            case acc of
+                False -> 
+                    writeIORef (accounted cell) True >> return True
+                True -> return False
+
+        updateProgramm :: Programm -> Register -> IO ()
+        updateProgramm prog reg =
+            appendIORef (progRegisters prog) reg >>
+            calculateTotal prog >>
+            --addToTotal prog reg >>
+            readIORef (progTotalAmt prog) >>= \amt ->
+            labelSetText (progTotalLabel prog) $ show amt
 
 quitProgram :: String -> Programm -> IO ()
 quitProgram path prog = do
